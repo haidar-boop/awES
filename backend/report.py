@@ -7,11 +7,7 @@ from __future__ import annotations
 
 import io
 
-import matplotlib
-
-matplotlib.use("Agg")  # headless
-import matplotlib.pyplot as plt  # noqa: E402
-import numpy as np  # noqa: E402
+import numpy as np
 from reportlab.lib import colors  # noqa: E402
 from reportlab.lib.pagesizes import A4  # noqa: E402
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle  # noqa: E402
@@ -33,10 +29,26 @@ STATUS_COLORS = {
 }
 
 
+def _plt():
+    """Import matplotlib lazily with the headless Agg backend.
+
+    matplotlib's first import can build a font cache (slow, 10-30s on a fresh
+    host). Deferring it until a PDF is actually requested keeps web-app startup
+    fast and avoids reload timeouts. Imports are cached, so this is cheap after
+    the first call.
+    """
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    return plt
+
+
 def _fig_to_image(fig, width_cm=16) -> Image:
     buf = io.BytesIO()
     fig.savefig(buf, format="png", dpi=130, bbox_inches="tight")
-    plt.close(fig)
+    _plt().close(fig)
     buf.seek(0)
     w = width_cm * cm
     return Image(buf, width=w, height=w * 0.5)
@@ -44,7 +56,7 @@ def _fig_to_image(fig, width_cm=16) -> Image:
 
 def _equity_chart(analysis) -> Image:
     eq = analysis["charts"]["equity"]
-    fig, ax = plt.subplots(figsize=(8, 4))
+    fig, ax = _plt().subplots(figsize=(8, 4))
     ax.plot(eq["x"], eq["strategy"], label="Strategy", color="#2563eb", lw=1.6)
     if eq.get("benchmark"):
         ax.plot(eq["x"], eq["benchmark"], label="Buy & hold", color="#94a3b8",
@@ -58,7 +70,7 @@ def _equity_chart(analysis) -> Image:
 
 def _drawdown_chart(analysis) -> Image:
     dd = analysis["charts"]["drawdown"]
-    fig, ax = plt.subplots(figsize=(8, 4))
+    fig, ax = _plt().subplots(figsize=(8, 4))
     y = [v * 100 if v is not None else 0 for v in dd["drawdown"]]
     ax.fill_between(dd["x"], y, 0, color="#dc2626", alpha=0.4)
     ax.plot(dd["x"], y, color="#dc2626", lw=0.8)
@@ -73,7 +85,7 @@ def _mc_chart(analysis) -> Image | None:
     mc = analysis["charts"].get("monte_carlo")
     if not mc:
         return None
-    fig, ax = plt.subplots(figsize=(8, 4))
+    fig, ax = _plt().subplots(figsize=(8, 4))
     x = mc["x"]
     ax.fill_between(x, mc["p5"], mc["p95"], color="#3b82f6", alpha=0.15,
                     label="5-95 pct")
