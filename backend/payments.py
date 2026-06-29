@@ -147,13 +147,41 @@ def claim_license(email: str | None) -> str | None:
     return None
 
 
+def stripe_has_paid_email(email: str | None) -> bool:
+    """Ask the Stripe API whether ``email`` has a succeeded charge.
+
+    Uses Stripe's Search API on ``billing_details.email`` (Stripe Checkout sets
+    that from the buyer's email). Durable source of truth; no webhook required.
+    No-ops (returns False) unless ``STRIPE_API_KEY`` is set; fails closed.
+    """
+    sk = os.environ.get("STRIPE_API_KEY")
+    if not sk or not email:
+        return False
+    query = f'billing_details.email:"{email.strip()}" AND status:"succeeded"'
+    url = "https://api.stripe.com/v1/charges/search?" + urllib.parse.urlencode(
+        {"query": query, "limit": 1}
+    )
+    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {sk}"})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            return bool(json.load(resp).get("data"))
+    except Exception:
+        return False
+
+
 def email_has_pro(email: str | None) -> bool:
-    """Has this email completed a purchase? (store fast-path, then LS API)."""
+    """Has this email completed a purchase?
+
+    Checks the local webhook record first (fast), then the provider APIs
+    (durable, survives restarts): Lemon Squeezy, then Stripe.
+    """
     if not email:
         return False
     if find_paid_key_by_email(email):
         return True
-    return lemonsqueezy_has_paid_email(email)
+    if lemonsqueezy_has_paid_email(email):
+        return True
+    return stripe_has_paid_email(email)
 
 
 def fulfill_purchase(

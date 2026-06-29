@@ -169,6 +169,20 @@ def test_ls_api_lookup_disabled_without_key():
     assert payments.lemonsqueezy_has_paid_email("anyone@example.com") is False
 
 
+def test_stripe_api_lookup_disabled_without_key(monkeypatch):
+    monkeypatch.delenv("STRIPE_API_KEY", raising=False)
+    assert payments.stripe_has_paid_email("anyone@example.com") is False
+
+
+def test_email_has_pro_uses_store(monkeypatch, tmp_path):
+    monkeypatch.setenv("LICENSE_STORE", str(tmp_path / "store.json"))
+    monkeypatch.delenv("LEMONSQUEEZY_API_KEY", raising=False)
+    monkeypatch.delenv("STRIPE_API_KEY", raising=False)
+    assert payments.email_has_pro("buyer@x.com") is False
+    payments.fulfill_purchase("buyer@x.com", "stripe", "ch_1")
+    assert payments.email_has_pro("buyer@x.com") is True
+
+
 # ---------------------------------------------------------------------------
 # tier gating in the analysis payload
 # ---------------------------------------------------------------------------
