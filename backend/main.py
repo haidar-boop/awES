@@ -29,6 +29,14 @@ import payments
 import report as report_mod
 import sample_data
 
+# Public Supabase config baked in as defaults so the app works without extra
+# host setup. The publishable/anon key is designed to be public (it ships to
+# browsers), so this is safe to commit. Real env vars (e.g. on Render) override.
+os.environ.setdefault("SUPABASE_URL", "https://hruwwjrfjzfkkxbonzls.supabase.co")
+os.environ.setdefault(
+    "SUPABASE_ANON_KEY", "sb_publishable_PJ0wKUMklnd25TY01w_hCg_oYeVELXS"
+)
+
 app = FastAPI(title="Backtest Reality Check", version="1.2.0")
 
 app.add_middleware(
