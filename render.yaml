@@ -1,15 +1,14 @@
 # One-service deploy on Render (https://render.com).
-# Builds the React app, installs Python deps, and serves both from FastAPI.
+# The built frontend (frontend/dist) is committed, so the build only needs
+# Python -- no Node step. FastAPI serves the SPA + the API together.
 services:
   - type: web
     name: backtest-reality-check
     runtime: python
-    buildCommand: |
-      pip install -r backend/requirements.txt
-      cd frontend && npm ci && npm run build
+    branch: claude/new-session-6nsvex
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
     startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: "3.11.9"
-      - key: NODE_VERSION
-        value: "20.11.1"

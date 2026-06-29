@@ -9,9 +9,11 @@ venv/
 
 # Node / frontend
 node_modules/
-frontend/dist/
 npm-debug.log*
 yarn-error.log*
+# NOTE: frontend/dist is intentionally committed so hosts can serve the app
+# without a Node build step. Rebuild with `npm run build` and recommit if you
+# change the frontend.
 
 # Env / secrets
 .env
