@@ -5,10 +5,23 @@ import { createContext, useContext, useEffect, useState } from "react";
 const AnalysisContext = createContext(null);
 const KEY = "brc:analysis";
 
+const REQ_KEY = "brc:request";
+
 export function AnalysisProvider({ children }) {
   const [analysis, setAnalysisState] = useState(() => {
     try {
       const raw = sessionStorage.getItem(KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // The request that produced the current analysis, so we can re-run it after
+  // the user unlocks Pro (null for built-in samples, which are already full).
+  const [request, setRequestState] = useState(() => {
+    try {
+      const raw = sessionStorage.getItem(REQ_KEY);
       return raw ? JSON.parse(raw) : null;
     } catch {
       return null;
@@ -25,8 +38,20 @@ export function AnalysisProvider({ children }) {
     }
   };
 
+  const setRequest = (r) => {
+    setRequestState(r);
+    try {
+      if (r) sessionStorage.setItem(REQ_KEY, JSON.stringify(r));
+      else sessionStorage.removeItem(REQ_KEY);
+    } catch {
+      /* ignore */
+    }
+  };
+
   return (
-    <AnalysisContext.Provider value={{ analysis, setAnalysis }}>
+    <AnalysisContext.Provider
+      value={{ analysis, setAnalysis, request, setRequest }}
+    >
       {children}
     </AnalysisContext.Provider>
   );

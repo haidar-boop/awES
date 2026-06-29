@@ -1,5 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useTheme } from "../lib/store.jsx";
+import { useLicense } from "../lib/license.jsx";
+import UnlockModal from "./UnlockModal.jsx";
 
 function Logo() {
   return (
@@ -16,6 +18,7 @@ function Logo() {
 
 export default function Layout({ children }) {
   const { dark, toggle } = useTheme();
+  const { isPro, openUnlock, clear } = useLicense();
   const loc = useLocation();
   return (
     <div className="flex min-h-full flex-col">
@@ -23,6 +26,19 @@ export default function Layout({ children }) {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <Logo />
           <nav className="flex items-center gap-2">
+            {isPro ? (
+              <button
+                onClick={clear}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-green-600/10 px-3 py-2 text-sm font-semibold text-green-600"
+                title="Pro active — click to sign out of Pro on this device"
+              >
+                ★ Pro
+              </button>
+            ) : (
+              <button onClick={openUnlock} className="btn-ghost">
+                Unlock Pro
+              </button>
+            )}
             {loc.pathname !== "/analyze" && (
               <Link to="/analyze" className="btn-primary">
                 Analyze a strategy
@@ -39,6 +55,7 @@ export default function Layout({ children }) {
           </nav>
         </div>
       </header>
+      <UnlockModal />
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
 

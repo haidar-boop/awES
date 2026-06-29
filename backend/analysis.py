@@ -344,4 +344,37 @@ def run_analysis(
             "locked": [] if paid else PAID_FEATURES,
         },
     }
+
+    if not paid:
+        _redact_for_free(result)
+
     return clean(result)
+
+
+# Explanation rows that belong to the paid tier (stripped for free users).
+_PRO_EXPLANATION_KEYS = {"dsr", "pbo", "montecarlo", "haircut"}
+
+
+def _redact_for_free(result: dict) -> None:
+    """Remove paid data from the payload so free users can't read it off the wire.
+
+    The verdict (and its plain-English reasons) stays free -- that's the hook --
+    but the detailed Deflated Sharpe / PBO / haircut numbers, the Monte Carlo
+    analysis, and the PDF are reserved for Pro. Each removed block is replaced
+    with a ``{"locked": True}`` marker so the UI can render a lock + upsell.
+    """
+    sharpe = result.get("sharpe", {})
+    sharpe["dsr"] = {"locked": True}
+    sharpe["haircut_sharpe"] = {"locked": True}
+
+    overfit = result.get("overfit", {})
+    overfit["pbo"] = {"locked": True}
+
+    result["monte_carlo"] = None
+    if isinstance(result.get("charts"), dict):
+        result["charts"]["monte_carlo"] = None
+
+    result["explanations"] = [
+        row for row in result.get("explanations", [])
+        if row.get("key") not in _PRO_EXPLANATION_KEYS
+    ]

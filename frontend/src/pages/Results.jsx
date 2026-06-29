@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAnalysis } from "../lib/store.jsx";
+import { useLicense } from "../lib/license.jsx";
 import { downloadReport } from "../lib/api.js";
 import VerdictCard from "../components/VerdictCard.jsx";
 import MetricRow from "../components/MetricRow.jsx";
+import LockedCard from "../components/LockedCard.jsx";
 import EquityChart from "../components/charts/EquityChart.jsx";
 import DrawdownChart from "../components/charts/DrawdownChart.jsx";
 import HistogramChart from "../components/charts/HistogramChart.jsx";
@@ -13,17 +15,27 @@ import { pct, num, int } from "../lib/format.js";
 
 const SIMPLE_KEYS = ["psr", "dsr", "oos", "benchmark", "montecarlo"];
 
-function StatTile({ label, value }) {
+function StatTile({ label, value, locked, onUnlock }) {
   return (
     <div className="rounded-lg bg-slate-100 px-4 py-3 dark:bg-slate-800">
       <div className="text-xs uppercase tracking-wide text-slate-500">{label}</div>
-      <div className="mt-1 font-mono text-lg font-semibold">{value}</div>
+      {locked ? (
+        <button
+          onClick={onUnlock}
+          className="mt-1 font-mono text-lg font-semibold text-brand hover:underline"
+        >
+          🔒 Pro
+        </button>
+      ) : (
+        <div className="mt-1 font-mono text-lg font-semibold">{value}</div>
+      )}
     </div>
   );
 }
 
 export default function Results() {
   const { analysis } = useAnalysis();
+  const { openUnlock } = useLicense();
   const nav = useNavigate();
   const [detailed, setDetailed] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -44,15 +56,26 @@ export default function Results() {
 
   const { verdict, stats, sharpe, charts, explanations, meta, monte_carlo } =
     analysis;
+  const locked = new Set(analysis.gating?.locked || []);
+  const isFree = locked.size > 0;
+  const dsrLocked = locked.has("deflated_sharpe");
+  const mcLocked = locked.has("monte_carlo");
+  const pdfLocked = locked.has("pdf_report");
+
   const rows = explanations || [];
   const shown = detailed ? rows : rows.filter((r) => SIMPLE_KEYS.includes(r.key));
 
   async function onDownload() {
+    if (pdfLocked) {
+      openUnlock();
+      return;
+    }
     setDownloading(true);
     try {
       await downloadReport(analysis);
     } catch (e) {
-      alert(e.message);
+      if (e.status === 402) openUnlock();
+      else alert(e.message);
     } finally {
       setDownloading(false);
     }
@@ -88,13 +111,29 @@ export default function Results() {
             New analysis
           </button>
           <button className="btn-primary" onClick={onDownload} disabled={downloading}>
-            {downloading ? "Generating…" : "Download PDF"}
+            {downloading ? "Generating…" : pdfLocked ? "🔒 PDF report" : "Download PDF"}
           </button>
         </div>
       </div>
 
       {/* Verdict */}
       <VerdictCard verdict={verdict} />
+
+      {/* Unlock banner (free only) */}
+      {isFree && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand/30 bg-brand/5 px-5 py-4">
+          <div>
+            <p className="font-semibold">You’re viewing the free report.</p>
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              Unlock Pro for the Deflated Sharpe, PBO, Monte Carlo simulation, and
+              the downloadable PDF audit.
+            </p>
+          </div>
+          <button className="btn-primary shrink-0" onClick={openUnlock}>
+            Unlock full report
+          </button>
+        </div>
+      )}
 
       {/* Parsing notes */}
       {meta.parse?.conversions?.length > 0 && (
@@ -111,7 +150,12 @@ export default function Results() {
         <StatTile label="Ann. Sharpe" value={num(stats.sharpe_annualized)} />
         <StatTile label="Max drawdown" value={pct(stats.max_drawdown)} />
         <StatTile label="PSR" value={pct(sharpe.psr)} />
-        <StatTile label="Deflated Sharpe" value={pct(sharpe.dsr.dsr)} />
+        <StatTile
+          label="Deflated Sharpe"
+          value={dsrLocked ? null : pct(sharpe.dsr?.dsr)}
+          locked={dsrLocked}
+          onUnlock={openUnlock}
+        />
       </div>
 
       {/* Metrics */}
@@ -134,6 +178,14 @@ export default function Results() {
             <MetricRow key={r.key} row={r} showPlain />
           ))}
         </div>
+        {isFree && (
+          <button
+            onClick={openUnlock}
+            className="mt-3 w-full rounded-lg border border-dashed border-brand/40 py-2 text-sm font-semibold text-brand hover:bg-brand/5"
+          >
+            🔒 Deflated Sharpe, PBO & more — unlock Pro
+          </button>
+        )}
       </div>
 
       {/* Charts */}
@@ -144,11 +196,20 @@ export default function Results() {
         {detailed && charts.rolling_sharpe?.x?.length > 0 && (
           <RollingSharpeChart data={charts.rolling_sharpe} />
         )}
-        {charts.monte_carlo && (
+        {charts.monte_carlo ? (
           <div className="lg:col-span-2">
             <MonteCarloChart data={charts.monte_carlo} />
           </div>
-        )}
+        ) : mcLocked ? (
+          <div className="lg:col-span-2">
+            <LockedCard
+              title="Monte Carlo cone"
+              subtitle="Thousands of resampled paths + outcome distribution"
+              onUnlock={openUnlock}
+              tall
+            />
+          </div>
+        ) : null}
       </div>
 
       {/* Detailed extras */}
@@ -180,8 +241,13 @@ export default function Results() {
               <Detail k="Per-period Sharpe" v={num(sharpe.per_period_sharpe, 3)} />
               <Detail k="Annualized Sharpe" v={num(sharpe.annualized_sharpe)} />
               <Detail k="PSR (vs 0)" v={pct(sharpe.psr)} />
-              <Detail k="Deflated Sharpe" v={pct(sharpe.dsr.dsr)} />
-              <Detail k="Luck-implied max SR" v={num(sharpe.dsr.expected_max_sharpe, 3)} />
+              <Detail k="Deflated Sharpe" v={pct(sharpe.dsr?.dsr)} locked={dsrLocked} onUnlock={openUnlock} />
+              <Detail
+                k="Luck-implied max SR"
+                v={num(sharpe.dsr?.expected_max_sharpe, 3)}
+                locked={dsrLocked}
+                onUnlock={openUnlock}
+              />
               <Detail k="Skew" v={num(sharpe.skew, 3)} />
               <Detail k="Kurtosis" v={num(sharpe.kurtosis, 2)} />
               <Detail
@@ -192,17 +258,22 @@ export default function Results() {
                     : "∞"
                 }
               />
-              {sharpe.haircut_sharpe && (
-                <Detail k="Haircut" v={pct(sharpe.haircut_sharpe.haircut)} />
-              )}
-              {monte_carlo && (
+              <Detail
+                k="Haircut"
+                v={pct(sharpe.haircut_sharpe?.haircut)}
+                locked={locked.has("haircut")}
+                onUnlock={openUnlock}
+              />
+              {monte_carlo ? (
                 <Detail
                   k="MC percentile"
                   v={`${Math.round(monte_carlo.final_return_percentile)}th`}
                 />
+              ) : (
+                <Detail k="MC percentile" v={null} locked={mcLocked} onUnlock={openUnlock} />
               )}
             </div>
-            {sharpe.dsr.variance_estimated && (
+            {sharpe.dsr?.variance_estimated && (
               <p className="mt-3 text-xs text-slate-500">
                 Note: the cross-trial Sharpe variance used for deflation was
                 estimated conservatively from this strategy’s own sampling
@@ -213,18 +284,25 @@ export default function Results() {
         </div>
       )}
 
-      <p className="text-center text-xs text-slate-500">
-        {verdict.disclaimer}
-      </p>
+      <p className="text-center text-xs text-slate-500">{verdict.disclaimer}</p>
     </div>
   );
 }
 
-function Detail({ k, v }) {
+function Detail({ k, v, locked, onUnlock }) {
   return (
     <>
       <span className="text-slate-500">{k}</span>
-      <span className="text-right font-mono font-medium">{v}</span>
+      {locked ? (
+        <button
+          onClick={onUnlock}
+          className="text-right font-mono font-medium text-brand hover:underline"
+        >
+          🔒 Pro
+        </button>
+      ) : (
+        <span className="text-right font-mono font-medium">{v}</span>
+      )}
     </>
   );
 }

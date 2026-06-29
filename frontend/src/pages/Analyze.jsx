@@ -14,7 +14,7 @@ const EXAMPLE_CSV = `return
 
 export default function Analyze() {
   const nav = useNavigate();
-  const { setAnalysis } = useAnalysis();
+  const { setAnalysis, setRequest } = useAnalysis();
 
   const [data, setData] = useState("");
   const [benchmark, setBenchmark] = useState("");
@@ -47,7 +47,7 @@ export default function Analyze() {
     }
     setLoading(true);
     try {
-      const result = await analyze({
+      const payload = {
         data,
         benchmark: benchmark.trim() || null,
         frequency,
@@ -56,8 +56,9 @@ export default function Analyze() {
         is_percentage: isPercentage,
         num_trials: Number(numTrials) || 1,
         confidence: Number(confidence),
-        tier: "pro",
-      });
+      };
+      const result = await analyze(payload);
+      setRequest(payload); // remember inputs so Unlock can re-run as Pro
       setAnalysis(result);
       nav("/results");
     } catch (e) {
@@ -72,6 +73,7 @@ export default function Analyze() {
     setError(null);
     try {
       const s = await fetchSample(name);
+      setRequest(null); // samples are the full demo; nothing to re-run
       setAnalysis(s.analysis);
       nav("/results");
     } catch (e) {

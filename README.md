@@ -193,12 +193,47 @@ Two built-in datasets let you see both verdicts instantly:
 
 ## Tiering (monetization hooks)
 
-Features are gated by a `tier` flag on the request (`free` vs `pro`):
-- **Free:** basic stats, drawdown, benchmark comparison, simple verdict.
-- **Pro:** Deflated Sharpe, PBO, Monte Carlo, PDF report.
+Tiering is **enforced server-side** — the browser sends a license *key*, never a
+tier, and the server decides Pro vs Free by verifying the key.
 
-`TODO` hooks for auth + Stripe are intentionally left clean (see `analysis.py`
-`PAID_FEATURES` and `main.py`). Payments are **not** built in v1.
+- **Free:** verdict (full, with reasons), basic stats, drawdown, equity,
+  benchmark, PSR, in/out-of-sample, distribution.
+- **Pro:** Deflated Sharpe, PBO, haircut, Monte Carlo (sim + cone chart), and
+  the downloadable PDF report.
+
+### How it works
+1. **License keys** (`licensing.py`) — stateless, HMAC-signed tokens
+   (`brc_<payload>.<sig>`). No database: the server verifies the signature and
+   expiry. Keys can be time-limited and revoked.
+2. **Payments** (`payments.py`) — `/api/webhooks/lemonsqueezy` and
+   `/api/webhooks/stripe` verify the provider's signature, then mint a key on a
+   paid order. (Lemon Squeezy is recommended — it's merchant-of-record and
+   handles sales tax.)
+3. **Enforcement** — `/api/analyze` redacts Pro fields for free users;
+   `/api/report` returns **402** without a valid key. The frontend shows lock
+   cards + an unlock modal (buy link + "enter your key").
+
+### Setup checklist (payments)
+1. Set a strong `LICENSE_SECRET` (see `.env.example`).
+2. Create a product in **Lemon Squeezy** (or **Stripe**); put the hosted
+   checkout link in `CHECKOUT_URL` and a `PRICE_LABEL`.
+3. Add a webhook pointing at `/api/webhooks/lemonsqueezy` (or `/stripe`) and set
+   `LEMONSQUEEZY_WEBHOOK_SECRET` (or `STRIPE_WEBHOOK_SECRET`).
+4. On purchase, the webhook mints a signed key — wire email delivery in
+   `payments.fulfill_purchase` (marked `TODO(email)`).
+5. For comps/testing, set `ADMIN_TOKEN` and `POST /api/license/issue` with the
+   `X-Admin-Token` header, or list literal keys in `LICENSE_KEYS`.
+
+**Still TODO (left clean):** transactional email of the key, user accounts +
+saved history, and multiple-strategy management.
+
+### Endpoints (licensing)
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/config` | Checkout link + paid-feature list for the UI. |
+| `POST /api/license/verify` | `{key}` → `{valid, tier, expires}`. |
+| `POST /api/license/issue` | Admin-only (`X-Admin-Token`) manual key minting. |
+| `POST /api/webhooks/lemonsqueezy` · `POST /api/webhooks/stripe` | Verified purchase → mint key. |
 
 ---
 

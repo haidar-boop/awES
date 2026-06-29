@@ -35,13 +35,14 @@ const CHECKS = [
 
 export default function Landing() {
   const nav = useNavigate();
-  const { setAnalysis } = useAnalysis();
+  const { setAnalysis, setRequest } = useAnalysis();
   const [loading, setLoading] = useState(null);
 
   async function runSample(name) {
     setLoading(name);
     try {
       const s = await fetchSample(name);
+      setRequest(null); // samples are the full demo; nothing to re-run
       setAnalysis(s.analysis);
       nav("/results");
     } catch (e) {
