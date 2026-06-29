@@ -71,6 +71,10 @@ class VerifyRequest(BaseModel):
     key: str | None = None
 
 
+class ClaimRequest(BaseModel):
+    email: str | None = None
+
+
 class IssueRequest(BaseModel):
     tier: str = "pro"
     days: int | None = None
@@ -238,7 +242,7 @@ def report(req: ReportRequest, x_license_key: str | None = Header(default=None))
 
 @app.post("/api/license/verify")
 def license_verify(req: VerifyRequest):
-    """Check a license key (used by the UI to show Pro state)."""
+    """Check a license key (used by the UI to confirm a stored Pro credential)."""
     info = licensing.verify_license(req.key)
     return {
         "valid": bool(info.get("valid")),
@@ -246,6 +250,27 @@ def license_verify(req: VerifyRequest):
         "expires": info.get("expires", 0),
         "reason": info.get("reason"),
     }
+
+
+@app.post("/api/license/claim")
+def license_claim(req: ClaimRequest):
+    """Unlock Pro by email after payment — no key to copy/paste.
+
+    Looks up a completed purchase for the email (webhook store first, then the
+    Lemon Squeezy API as a durable fallback) and returns a signed key the
+    browser stores transparently.
+    """
+    email = (req.email or "").strip()
+    if "@" not in email or "." not in email:
+        raise HTTPException(400, "Please enter a valid email address.")
+    key = payments.claim_license(email)
+    if not key:
+        raise HTTPException(
+            404,
+            "We couldn't find a completed purchase for that email yet. If you "
+            "just paid, give it a few seconds — this page checks automatically.",
+        )
+    return {"key": key, "tier": "pro"}
 
 
 @app.post("/api/license/issue")

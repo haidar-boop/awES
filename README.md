@@ -209,9 +209,13 @@ tier, and the server decides Pro vs Free by verifying the key.
    `/api/webhooks/stripe` verify the provider's signature, then mint a key on a
    paid order. (Lemon Squeezy is recommended — it's merchant-of-record and
    handles sales tax.)
-3. **Enforcement** — `/api/analyze` redacts Pro fields for free users;
-   `/api/report` returns **402** without a valid key. The frontend shows lock
-   cards + an unlock modal (buy link + "enter your key").
+3. **Unlock by email — no key to paste.** The user enters their email, pays at
+   checkout (email prefilled), and the page **auto-unlocks**: it polls
+   `/api/license/claim`, which finds the purchase (webhook store first, then the
+   Lemon Squeezy API) and returns a signed key the browser stores
+   transparently.
+4. **Enforcement** — `/api/analyze` redacts Pro fields for free users;
+   `/api/report` returns **402** without a valid key.
 
 ### Setup checklist (payments)
 1. Set a strong `LICENSE_SECRET` (see `.env.example`).
@@ -219,19 +223,26 @@ tier, and the server decides Pro vs Free by verifying the key.
    checkout link in `CHECKOUT_URL` and a `PRICE_LABEL`.
 3. Add a webhook pointing at `/api/webhooks/lemonsqueezy` (or `/stripe`) and set
    `LEMONSQUEEZY_WEBHOOK_SECRET` (or `STRIPE_WEBHOOK_SECRET`).
-4. On purchase, the webhook mints a signed key — wire email delivery in
-   `payments.fulfill_purchase` (marked `TODO(email)`).
-5. For comps/testing, set `ADMIN_TOKEN` and `POST /api/license/issue` with the
-   `X-Admin-Token` header, or list literal keys in `LICENSE_KEYS`.
+4. **For durable email-unlock, set `LEMONSQUEEZY_API_KEY`.** Hosts with an
+   ephemeral disk (e.g. Render free) wipe the local webhook store on restart;
+   the API lookup makes Lemon Squeezy the source of truth so claims keep working.
+5. For comps/testing, set `ADMIN_TOKEN` and `POST /api/license/issue`, or list
+   literal keys in `LICENSE_KEYS`.
 
-**Still TODO (left clean):** transactional email of the key, user accounts +
-saved history, and multiple-strategy management.
+> **Email-unlock tradeoff:** anyone who enters an email that has a completed
+> purchase gets access (no inbox verification). That's the intended low-friction
+> behavior; for stronger gating, email a magic link instead of unlocking
+> in-place.
+
+**Still TODO (left clean):** user accounts + saved history and
+multiple-strategy management.
 
 ### Endpoints (licensing)
 | Endpoint | Purpose |
 |---|---|
 | `GET /api/config` | Checkout link + paid-feature list for the UI. |
-| `POST /api/license/verify` | `{key}` → `{valid, tier, expires}`. |
+| `POST /api/license/claim` | `{email}` → `{key, tier}` after a verified purchase (powers email-unlock). |
+| `POST /api/license/verify` | `{key}` → `{valid, tier, expires}` (confirms a stored credential). |
 | `POST /api/license/issue` | Admin-only (`X-Admin-Token`) manual key minting. |
 | `POST /api/webhooks/lemonsqueezy` · `POST /api/webhooks/stripe` | Verified purchase → mint key. |
 

@@ -59,6 +59,17 @@ export async function verifyLicense(key) {
   return jsonOrThrow(res);
 }
 
+// Unlock Pro by the email the user paid with. Returns { key, tier } or throws
+// (404 until the purchase is found).
+export async function claimLicense(email) {
+  const res = await fetch("/api/license/claim", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  return jsonOrThrow(res);
+}
+
 export async function downloadReport(analysis) {
   const res = await fetch("/api/report", {
     method: "POST",

@@ -22,6 +22,8 @@ import hashlib
 import json
 import os
 import time
+import urllib.parse
+import urllib.request
 
 from licensing import issue_license
 
@@ -85,6 +87,66 @@ def _record(entry: dict) -> None:
         pass  # store is best-effort; the key itself is stateless
 
 
+def find_paid_key_by_email(email: str | None) -> str | None:
+    """Return a previously-issued key for ``email`` from the store, if any."""
+    if not email:
+        return None
+    target = email.strip().lower()
+    try:
+        with open(_store_path(), "r") as f:
+            data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+    for rec in reversed(data):  # most recent first
+        if (rec.get("email") or "").strip().lower() == target and rec.get("key"):
+            return rec["key"]
+    return None
+
+
+def lemonsqueezy_has_paid_email(email: str | None) -> bool:
+    """Ask the Lemon Squeezy API whether ``email`` has a paid order.
+
+    Durable source of truth — survives server restarts / ephemeral disks where
+    the local store would be lost. No-ops (returns False) unless
+    ``LEMONSQUEEZY_API_KEY`` is set, and fails closed on any error.
+    """
+    api = os.environ.get("LEMONSQUEEZY_API_KEY")
+    if not api or not email:
+        return False
+    params = {"filter[user_email]": email.strip()}
+    store_id = os.environ.get("LEMONSQUEEZY_STORE_ID")
+    if store_id:
+        params["filter[store_id]"] = store_id
+    url = "https://api.lemonsqueezy.com/v1/orders?" + urllib.parse.urlencode(params)
+    req = urllib.request.Request(
+        url,
+        headers={"Authorization": f"Bearer {api}",
+                 "Accept": "application/vnd.api+json"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            payload = json.load(resp)
+        for order in payload.get("data", []):
+            status = (order.get("attributes") or {}).get("status", "")
+            if status in ("paid", "active", "completed"):
+                return True
+    except Exception:
+        return False
+    return False
+
+
+def claim_license(email: str | None) -> str | None:
+    """Return a Pro key for a paid ``email`` (store first, then LS API), else None."""
+    if not email:
+        return None
+    key = find_paid_key_by_email(email)
+    if key:
+        return key
+    if lemonsqueezy_has_paid_email(email):
+        return fulfill_purchase(email, "lemonsqueezy-claim", "api-verified")
+    return None
+
+
 def fulfill_purchase(
     email: str | None, provider: str, reference: str | None = None,
     days: int | None = None,
@@ -143,4 +205,7 @@ def public_config() -> dict:
         "checkout_url": os.environ.get("CHECKOUT_URL", ""),
         "payments_enabled": bool(os.environ.get("CHECKOUT_URL")),
         "price_label": os.environ.get("PRICE_LABEL", "Pro — full report"),
+        # Query-param name used to prefill the buyer's email at checkout.
+        # Lemon Squeezy: "checkout[email]"; Stripe Payment Links: "prefilled_email".
+        "checkout_email_param": os.environ.get("CHECKOUT_EMAIL_PARAM", "checkout[email]"),
     }

@@ -1,12 +1,15 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { verifyLicense, getConfig } from "./api.js";
+import { verifyLicense, getConfig, claimLicense } from "./api.js";
 
-// Holds the user's license key (persisted) and the verified Pro state.
+// Holds the user's Pro credential (a key, fetched transparently by email) and
+// the verified Pro state. The user only ever types their email.
 const LicenseContext = createContext(null);
 const KEY = "brc:license";
+const EMAIL = "brc:email";
 
 export function LicenseProvider({ children }) {
   const [key, setKeyState] = useState(() => localStorage.getItem(KEY) || "");
+  const [email, setEmailState] = useState(() => localStorage.getItem(EMAIL) || "");
   const [isPro, setIsPro] = useState(false);
   const [checking, setChecking] = useState(false);
   const [unlockOpen, setUnlockOpen] = useState(false);
@@ -49,14 +52,31 @@ export function LicenseProvider({ children }) {
     else localStorage.removeItem(KEY);
   }, []);
 
-  const clear = useCallback(() => saveKey(""), [saveKey]);
+  const saveEmail = useCallback((e) => {
+    const v = (e || "").trim();
+    setEmailState(v);
+    if (v) localStorage.setItem(EMAIL, v);
+    else localStorage.removeItem(EMAIL);
+  }, []);
 
-  // Validate a key without saving (returns the verify result).
-  const tryKey = useCallback(async (k) => {
-    const r = await verifyLicense(k);
-    if (r.valid && r.tier === "pro") saveKey(k);
-    return r;
+  const clear = useCallback(() => {
+    saveKey("");
+    setIsPro(false);
   }, [saveKey]);
+
+  // Unlock Pro by email (after payment). Remembers the email, and on success
+  // stores the returned key transparently. Throws (404) until the purchase
+  // is found, so the caller can poll.
+  const claim = useCallback(async (e) => {
+    const addr = (e || "").trim();
+    saveEmail(addr);
+    const r = await claimLicense(addr);
+    if (r.key) {
+      saveKey(r.key);
+      setIsPro(true);
+    }
+    return r;
+  }, [saveKey, saveEmail]);
 
   const openUnlock = useCallback(() => setUnlockOpen(true), []);
   const closeUnlock = useCallback(() => setUnlockOpen(false), []);
@@ -64,7 +84,7 @@ export function LicenseProvider({ children }) {
   return (
     <LicenseContext.Provider
       value={{
-        key, isPro, checking, config, saveKey, clear, tryKey,
+        key, email, isPro, checking, config, saveKey, saveEmail, clear, claim,
         unlockOpen, openUnlock, closeUnlock,
       }}
     >

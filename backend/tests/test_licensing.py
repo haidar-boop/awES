@@ -145,6 +145,31 @@ def test_fulfill_purchase_issues_verifiable_key(monkeypatch, tmp_path):
 
 
 # ---------------------------------------------------------------------------
+# email-based claim (pay -> unlock on site, no key pasting)
+# ---------------------------------------------------------------------------
+
+def test_claim_by_email_from_store(monkeypatch, tmp_path):
+    monkeypatch.setenv("LICENSE_STORE", str(tmp_path / "store.json"))
+    issued = payments.fulfill_purchase("user@example.com", "lemonsqueezy", "o1")
+    # Case-insensitive lookup.
+    found = payments.find_paid_key_by_email("USER@example.com")
+    assert found == issued
+    assert payments.claim_license("user@example.com") == issued
+    assert licensing.verify_license(found)["tier"] == "pro"
+
+
+def test_claim_unknown_email_returns_none(monkeypatch, tmp_path):
+    monkeypatch.setenv("LICENSE_STORE", str(tmp_path / "store.json"))
+    # No store entry and no LEMONSQUEEZY_API_KEY -> no entitlement.
+    assert payments.claim_license("stranger@example.com") is None
+
+
+def test_ls_api_lookup_disabled_without_key():
+    # Fails closed when the API key isn't configured (no network call).
+    assert payments.lemonsqueezy_has_paid_email("anyone@example.com") is False
+
+
+# ---------------------------------------------------------------------------
 # tier gating in the analysis payload
 # ---------------------------------------------------------------------------
 
