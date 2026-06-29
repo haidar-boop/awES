@@ -147,26 +147,44 @@ def claim_license(email: str | None) -> str | None:
     return None
 
 
-def stripe_has_paid_email(email: str | None) -> bool:
-    """Ask the Stripe API whether ``email`` has a succeeded charge.
+def _stripe_get(url: str, sk: str) -> dict:
+    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {sk}"})
+    with urllib.request.urlopen(req, timeout=10) as resp:
+        return json.load(resp)
 
-    Uses Stripe's Search API on ``billing_details.email`` (Stripe Checkout sets
-    that from the buyer's email). Durable source of truth; no webhook required.
-    No-ops (returns False) unless ``STRIPE_API_KEY`` is set; fails closed.
+
+def stripe_has_paid_email(email: str | None) -> bool:
+    """Whether ``email`` has a paid Stripe Checkout session.
+
+    Scans recent Checkout Sessions (what Payment Links create) for a ``paid``
+    one matching the email -- reliable regardless of whether a Customer object
+    was created. Durable source of truth; no webhook required. Returns False
+    unless ``STRIPE_API_KEY`` is set, and fails closed on any error.
     """
     sk = os.environ.get("STRIPE_API_KEY")
     if not sk or not email:
         return False
-    query = f'billing_details.email:"{email.strip()}" AND status:"succeeded"'
-    url = "https://api.stripe.com/v1/charges/search?" + urllib.parse.urlencode(
-        {"query": query, "limit": 1}
-    )
-    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {sk}"})
+    target = email.strip().lower()
+    url = "https://api.stripe.com/v1/checkout/sessions?limit=100"
     try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            return bool(json.load(resp).get("data"))
+        for _ in range(3):  # up to ~300 most-recent sessions
+            data = _stripe_get(url, sk)
+            for s in data.get("data", []):
+                cd = s.get("customer_details") or {}
+                em = (cd.get("email") or s.get("customer_email") or "").strip().lower()
+                if em == target and s.get("payment_status") == "paid":
+                    return True
+            if data.get("has_more") and data.get("data"):
+                last = data["data"][-1]["id"]
+                url = (
+                    "https://api.stripe.com/v1/checkout/sessions"
+                    f"?limit=100&starting_after={last}"
+                )
+            else:
+                break
     except Exception:
         return False
+    return False
 
 
 def email_has_pro(email: str | None) -> bool:
