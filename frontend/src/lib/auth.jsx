@@ -70,6 +70,20 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  // Re-check entitlement when the user returns to the tab (e.g. back from the
+  // Stripe checkout tab) so Pro flips without needing a manual refresh.
+  useEffect(() => {
+    const onFocus = () => {
+      if (session?.access_token && !me.pro) refreshMe();
+    };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
+    };
+  }, [session, me.pro, refreshMe]);
+
   const signUp = useCallback(
     async (email, password) =>
       client.auth.signUp({
