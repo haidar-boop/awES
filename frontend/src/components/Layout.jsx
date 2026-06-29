@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useTheme } from "../lib/store.jsx";
-import { useLicense } from "../lib/license.jsx";
-import UnlockModal from "./UnlockModal.jsx";
+import { useAuth } from "../lib/auth.jsx";
+import AuthModal from "./AuthModal.jsx";
 
 function Logo() {
   return (
@@ -18,7 +18,7 @@ function Logo() {
 
 export default function Layout({ children }) {
   const { dark, toggle } = useTheme();
-  const { isPro, openUnlock, clear } = useLicense();
+  const { isAuthed, isPro, email, openUnlock, signOut } = useAuth();
   const loc = useLocation();
   return (
     <div className="flex min-h-full flex-col">
@@ -26,17 +26,27 @@ export default function Layout({ children }) {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <Logo />
           <nav className="flex items-center gap-2">
-            {isPro ? (
-              <button
-                onClick={clear}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-green-600/10 px-3 py-2 text-sm font-semibold text-green-600"
-                title="Pro active — click to sign out of Pro on this device"
-              >
+            {isPro && (
+              <span className="hidden items-center gap-1.5 rounded-lg bg-green-600/10 px-3 py-2 text-sm font-semibold text-green-600 sm:inline-flex">
                 ★ Pro
+              </span>
+            )}
+            {!isPro && (
+              <button onClick={openUnlock} className="btn-ghost">
+                Unlock Pro
+              </button>
+            )}
+            {isAuthed ? (
+              <button
+                onClick={signOut}
+                className="btn-ghost"
+                title={email ? `Signed in as ${email}` : "Log out"}
+              >
+                Log out
               </button>
             ) : (
               <button onClick={openUnlock} className="btn-ghost">
-                Unlock Pro
+                Sign in
               </button>
             )}
             {loc.pathname !== "/analyze" && (
@@ -55,7 +65,7 @@ export default function Layout({ children }) {
           </nav>
         </div>
       </header>
-      <UnlockModal />
+      <AuthModal />
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
 

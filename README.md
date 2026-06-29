@@ -191,60 +191,59 @@ Two built-in datasets let you see both verdicts instantly:
 
 ---
 
-## Tiering (monetization hooks)
+## Accounts & Pro tier
 
-Tiering is **enforced server-side** — the browser sends a license *key*, never a
-tier, and the server decides Pro vs Free by verifying the key.
+Real accounts via **Supabase** (email + password, email verification, login),
+with **server-side** entitlement — the browser sends its Supabase token, never a
+tier, and the server grants Pro only for a **verified account whose email has a
+completed purchase**.
 
 - **Free:** verdict (full, with reasons), basic stats, drawdown, equity,
   benchmark, PSR, in/out-of-sample, distribution.
 - **Pro:** Deflated Sharpe, PBO, haircut, Monte Carlo (sim + cone chart), and
   the downloadable PDF report.
 
+### The flow
+1. **Sign up** (email + password) → Supabase sends a **verification link**.
+2. **Click the link** → email confirmed → **log in**.
+3. **Pay** at the checkout (email prefilled from the account). Lemon Squeezy
+   emails the **purchase confirmation/receipt** automatically.
+4. The page **unlocks automatically** — it polls `/api/auth/me`, and the server
+   reports Pro once the payment is seen.
+
 ### How it works
-1. **License keys** (`licensing.py`) — stateless, HMAC-signed tokens
-   (`brc_<payload>.<sig>`). No database: the server verifies the signature and
-   expiry. Keys can be time-limited and revoked.
-2. **Payments** (`payments.py`) — `/api/webhooks/lemonsqueezy` and
-   `/api/webhooks/stripe` verify the provider's signature, then mint a key on a
-   paid order. (Lemon Squeezy is recommended — it's merchant-of-record and
-   handles sales tax.)
-3. **Unlock by email — no key to paste.** The user enters their email, pays at
-   checkout (email prefilled), and the page **auto-unlocks**: it polls
-   `/api/license/claim`, which finds the purchase (webhook store first, then the
-   Lemon Squeezy API) and returns a signed key the browser stores
-   transparently.
-4. **Enforcement** — `/api/analyze` redacts Pro fields for free users;
-   `/api/report` returns **402** without a valid key.
+- **Auth** (`auth.py`) — validates the Supabase access token by calling
+  `GET {SUPABASE_URL}/auth/v1/user` (signing-method agnostic; cached briefly).
+  Never trusts the browser.
+- **Payments** (`payments.py`) — `/api/webhooks/lemonsqueezy` (and `/stripe`)
+  verify the provider signature and record the paid email; `email_has_pro()`
+  checks that record first, then the **Lemon Squeezy API** as a durable fallback.
+- **Enforcement** — `/api/analyze` redacts Pro fields for free users;
+  `/api/report` returns **402** without Pro.
 
-### Setup checklist (payments)
-1. Set a strong `LICENSE_SECRET` (see `.env.example`).
-2. Create a product in **Lemon Squeezy** (or **Stripe**); put the hosted
-   checkout link in `CHECKOUT_URL` and a `PRICE_LABEL`.
-3. Add a webhook pointing at `/api/webhooks/lemonsqueezy` (or `/stripe`) and set
-   `LEMONSQUEEZY_WEBHOOK_SECRET` (or `STRIPE_WEBHOOK_SECRET`).
-4. **For durable email-unlock, set `LEMONSQUEEZY_API_KEY`.** Hosts with an
-   ephemeral disk (e.g. Render free) wipe the local webhook store on restart;
-   the API lookup makes Lemon Squeezy the source of truth so claims keep working.
-5. For comps/testing, set `ADMIN_TOKEN` and `POST /api/license/issue`, or list
-   literal keys in `LICENSE_KEYS`.
+### Setup checklist
+1. Create a free **Supabase** project → set `SUPABASE_URL` + `SUPABASE_ANON_KEY`.
+   Keep "Confirm email" on; add your site URL under Auth → URL Configuration.
+2. Create a product in **Lemon Squeezy** → set `CHECKOUT_URL` + `PRICE_LABEL`.
+3. Add a Lemon Squeezy webhook → `/api/webhooks/lemonsqueezy`, set
+   `LEMONSQUEEZY_WEBHOOK_SECRET`.
+4. **Set `LEMONSQUEEZY_API_KEY`** — recommended on ephemeral hosts (Render free)
+   so Pro survives restarts (Lemon Squeezy becomes the source of truth).
+5. For comps/testing, set `ADMIN_TOKEN` and `POST /api/admin/grant {email}`.
 
-> **Email-unlock tradeoff:** anyone who enters an email that has a completed
-> purchase gets access (no inbox verification). That's the intended low-friction
-> behavior; for stronger gating, email a magic link instead of unlocking
-> in-place.
+See `.env.example` for every variable.
 
-**Still TODO (left clean):** user accounts + saved history and
-multiple-strategy management.
+> **Note:** Pro is keyed to the account's email having paid. Anyone who can log
+> into a verified account *and* whose email has a completed purchase is Pro.
+> Saved history and multiple-strategy management are left as clean TODOs.
 
-### Endpoints (licensing)
+### Endpoints (accounts/payments)
 | Endpoint | Purpose |
 |---|---|
-| `GET /api/config` | Checkout link + paid-feature list for the UI. |
-| `POST /api/license/claim` | `{email}` → `{key, tier}` after a verified purchase (powers email-unlock). |
-| `POST /api/license/verify` | `{key}` → `{valid, tier, expires}` (confirms a stored credential). |
-| `POST /api/license/issue` | Admin-only (`X-Admin-Token`) manual key minting. |
-| `POST /api/webhooks/lemonsqueezy` · `POST /api/webhooks/stripe` | Verified purchase → mint key. |
+| `GET /api/config` | Supabase keys + checkout link + paid-feature list for the UI. |
+| `GET /api/auth/me` | `{authenticated, email, verified, pro}` for the current token. |
+| `POST /api/admin/grant` | Admin-only (`X-Admin-Token`) — grant Pro to an email. |
+| `POST /api/webhooks/lemonsqueezy` · `POST /api/webhooks/stripe` | Verified purchase → record paid email. |
 
 ---
 

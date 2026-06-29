@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAnalysis } from "../lib/store.jsx";
-import { useLicense } from "../lib/license.jsx";
+import { useAuth } from "../lib/auth.jsx";
 import { downloadReport } from "../lib/api.js";
 import VerdictCard from "../components/VerdictCard.jsx";
 import MetricRow from "../components/MetricRow.jsx";
@@ -35,7 +35,7 @@ function StatTile({ label, value, locked, onUnlock }) {
 
 export default function Results() {
   const { analysis } = useAnalysis();
-  const { openUnlock } = useLicense();
+  const { openUnlock } = useAuth();
   const nav = useNavigate();
   const [detailed, setDetailed] = useState(false);
   const [downloading, setDownloading] = useState(false);

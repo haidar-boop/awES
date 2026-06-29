@@ -3,17 +3,17 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
 import { AnalysisProvider } from "./lib/store.jsx";
-import { LicenseProvider } from "./lib/license.jsx";
+import { AuthProvider } from "./lib/auth.jsx";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
-      <LicenseProvider>
+      <AuthProvider>
         <AnalysisProvider>
           <App />
         </AnalysisProvider>
-      </LicenseProvider>
+      </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

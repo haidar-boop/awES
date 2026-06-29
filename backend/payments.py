@@ -147,6 +147,15 @@ def claim_license(email: str | None) -> str | None:
     return None
 
 
+def email_has_pro(email: str | None) -> bool:
+    """Has this email completed a purchase? (store fast-path, then LS API)."""
+    if not email:
+        return False
+    if find_paid_key_by_email(email):
+        return True
+    return lemonsqueezy_has_paid_email(email)
+
+
 def fulfill_purchase(
     email: str | None, provider: str, reference: str | None = None,
     days: int | None = None,

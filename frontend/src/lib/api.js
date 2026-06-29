@@ -1,13 +1,14 @@
 // Thin API client. Uses relative /api paths so the same build works whether
 // served by FastAPI directly or proxied by Vite in dev.
 
-const LICENSE_KEY = "brc:license";
-
-// Attach the stored license key so the SERVER can decide the tier. We never
-// send a "tier" — the browser isn't trusted to grant Pro.
-function licenseHeaders() {
-  const key = localStorage.getItem(LICENSE_KEY);
-  return key ? { "X-License-Key": key } : {};
+// The current Supabase access token, set by the AuthProvider. The SERVER
+// validates it and decides the tier — the browser never claims Pro itself.
+let _authToken = null;
+export function setAuthToken(token) {
+  _authToken = token || null;
+}
+function authHeaders() {
+  return _authToken ? { Authorization: `Bearer ${_authToken}` } : {};
 }
 
 async function jsonOrThrow(res) {
@@ -29,51 +30,32 @@ async function jsonOrThrow(res) {
 export async function analyze(payload) {
   const res = await fetch("/api/analyze", {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...licenseHeaders() },
+    headers: { "Content-Type": "application/json", ...authHeaders() },
     body: JSON.stringify(payload),
   });
   return jsonOrThrow(res);
 }
 
 export async function fetchSample(name = "overfit") {
-  const res = await fetch(`/api/sample?name=${encodeURIComponent(name)}`);
-  return jsonOrThrow(res);
+  return jsonOrThrow(await fetch(`/api/sample?name=${encodeURIComponent(name)}`));
 }
 
 export async function fetchSamples() {
-  const res = await fetch("/api/samples");
-  return jsonOrThrow(res);
+  return jsonOrThrow(await fetch("/api/samples"));
 }
 
 export async function getConfig() {
-  const res = await fetch("/api/config");
-  return jsonOrThrow(res);
+  return jsonOrThrow(await fetch("/api/config"));
 }
 
-export async function verifyLicense(key) {
-  const res = await fetch("/api/license/verify", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ key }),
-  });
-  return jsonOrThrow(res);
-}
-
-// Unlock Pro by the email the user paid with. Returns { key, tier } or throws
-// (404 until the purchase is found).
-export async function claimLicense(email) {
-  const res = await fetch("/api/license/claim", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
-  });
-  return jsonOrThrow(res);
+export async function getMe() {
+  return jsonOrThrow(await fetch("/api/auth/me", { headers: { ...authHeaders() } }));
 }
 
 export async function downloadReport(analysis) {
   const res = await fetch("/api/report", {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...licenseHeaders() },
+    headers: { "Content-Type": "application/json", ...authHeaders() },
     body: JSON.stringify({ analysis }),
   });
   if (res.status === 402) {
