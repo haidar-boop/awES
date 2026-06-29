@@ -52,6 +52,15 @@ export async function getMe() {
   return jsonOrThrow(await fetch("/api/auth/me", { headers: { ...authHeaders() } }));
 }
 
+export async function analyzeStrategyCode({ code, language, context }) {
+  const res = await fetch("/api/ai/analyze-strategy", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify({ code, language, context }),
+  });
+  return jsonOrThrow(res); // throws with .status (402 = needs Pro, 429 = limit)
+}
+
 export async function downloadReport(analysis) {
   const res = await fetch("/api/report", {
     method: "POST",

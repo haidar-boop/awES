@@ -24,6 +24,7 @@ from pydantic import BaseModel, Field
 
 import analysis as analysis_mod
 import auth
+import ai_analyzer
 import parsing
 import payments
 import report as report_mod
@@ -81,6 +82,31 @@ class ReportRequest(BaseModel):
 
 class GrantRequest(BaseModel):
     email: str | None = None
+
+
+class StrategyCodeRequest(BaseModel):
+    code: str | None = None
+    language: str | None = None
+    context: str | None = None
+
+
+# Simple in-memory daily rate limit for the (paid) AI review. Resets on restart;
+# combined with Pro-only gating it's a soft cost guard. email -> [date, count].
+_AI_USAGE: dict[str, list] = {}
+AI_DAILY_LIMIT = int(os.environ.get("AI_DAILY_LIMIT", "5"))
+
+
+def _check_ai_rate(email: str) -> bool:
+    import datetime
+    today = datetime.date.today().isoformat()
+    rec = _AI_USAGE.get(email)
+    if not rec or rec[0] != today:
+        _AI_USAGE[email] = [today, 0]
+        rec = _AI_USAGE[email]
+    if rec[1] >= AI_DAILY_LIMIT:
+        return False
+    rec[1] += 1
+    return True
 
 
 # ---------------------------------------------------------------------------
@@ -147,6 +173,8 @@ def config():
     cfg["supabase_url"] = os.environ.get("SUPABASE_URL", "")
     cfg["supabase_anon_key"] = os.environ.get("SUPABASE_ANON_KEY", "")
     cfg["auth_enabled"] = auth.configured()
+    cfg["ai_enabled"] = ai_analyzer.configured()
+    cfg["ai_daily_limit"] = AI_DAILY_LIMIT
     return cfg
 
 
@@ -250,6 +278,39 @@ def analyze(req: AnalyzeRequest, authorization: str | None = Header(default=None
     except Exception as e:
         raise HTTPException(400, f"Analysis failed: {e}")
     return result
+
+
+@app.post("/api/ai/analyze-strategy")
+def ai_analyze_strategy(req: StrategyCodeRequest,
+                        authorization: str | None = Header(default=None)):
+    # HARD COST GATE: resolve the tier first and bail for non-Pro BEFORE any
+    # call to the AI provider. Free users never trigger (or cost) an AI request.
+    tier, user = _resolve_tier(authorization)
+    if tier != "pro":
+        raise HTTPException(402, "AI strategy review is a Pro feature. Unlock Pro to use it.")
+    if not ai_analyzer.configured():
+        raise HTTPException(503, "AI review isn't enabled on this deployment yet.")
+
+    code = (req.code or "").strip()
+    if not code:
+        raise HTTPException(400, "Paste your strategy code or rules first.")
+    if len(code) > ai_analyzer.MAX_INPUT_CHARS:
+        raise HTTPException(
+            413, f"Too large — keep it under {ai_analyzer.MAX_INPUT_CHARS // 1000} KB."
+        )
+
+    email = (user or {}).get("email") or "unknown"
+    if not _check_ai_rate(email):
+        raise HTTPException(
+            429, f"Daily limit reached ({AI_DAILY_LIMIT} reviews/day). Try again tomorrow."
+        )
+
+    try:
+        return ai_analyzer.analyze_strategy(code, req.language, req.context)
+    except ai_analyzer.AIError as e:
+        raise HTTPException(502, str(e))
+    except Exception as e:
+        raise HTTPException(502, f"AI review failed: {e}")
 
 
 @app.post("/api/report")

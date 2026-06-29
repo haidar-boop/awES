@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { analyze, fetchSample } from "../lib/api.js";
 import { useAnalysis } from "../lib/store.jsx";
 import Tooltip from "../components/Tooltip.jsx";
+import StrategyCodeAnalyzer from "../components/StrategyCodeAnalyzer.jsx";
 
 const EXAMPLE_CSV = `return
 0.012
@@ -264,6 +265,11 @@ export default function Analyze() {
           </div>
         </div>
       )}
+
+      {/* AI strategy code review (separate from the returns analysis above) */}
+      <div className="mt-8">
+        <StrategyCodeAnalyzer />
+      </div>
     </div>
   );
 }
