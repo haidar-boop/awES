@@ -41,7 +41,7 @@ os.environ.setdefault(
 # Public checkout config (the payment link is public; the secret STRIPE_API_KEY
 # stays in the host env). Stripe Payment Links prefill email via prefilled_email.
 os.environ.setdefault("CHECKOUT_URL", "https://buy.stripe.com/test_7sY4gB5Xx3lMd7i89l2cg00")
-os.environ.setdefault("PRICE_LABEL", "CA$29 one-time")
+os.environ.setdefault("PRICE_LABEL", "CA$18.99 one-time")
 os.environ.setdefault("CHECKOUT_EMAIL_PARAM", "prefilled_email")
 
 app = FastAPI(title="Backtest Reality Check", version="1.2.0")
