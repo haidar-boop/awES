@@ -44,11 +44,12 @@ def test_time_underwater_fraction():
     assert len(out["episodes"]) >= 1
 
 
-def test_run_analysis_includes_drawdown_recovery_free():
+def test_run_analysis_gates_drawdown_recovery():
     import analysis
     rng = np.random.default_rng(3)
     r = rng.normal(0.001, 0.02, size=200)
-    result = analysis.run_analysis(returns=r, frequency="daily", tier="free")
-    dr = result["drawdown_recovery"]
-    assert dr["available"] is True
-    assert "drawdown_recovery" not in result["gating"]["locked"]
+    pro = analysis.run_analysis(returns=r, frequency="daily", tier="pro")
+    assert pro["drawdown_recovery"]["available"] is True
+    free = analysis.run_analysis(returns=r, frequency="daily", tier="free")
+    assert free["drawdown_recovery"] is None
+    assert free["gating"]["verdict_only"] is True

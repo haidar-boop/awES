@@ -4,6 +4,7 @@ import { useAnalysis } from "../lib/store.jsx";
 import { useAuth } from "../lib/auth.jsx";
 import { downloadReport } from "../lib/api.js";
 import VerdictCard from "../components/VerdictCard.jsx";
+import VerdictTeaser from "../components/VerdictTeaser.jsx";
 import TradeDependencyCard from "../components/TradeDependencyCard.jsx";
 import RiskOfRuinCard from "../components/RiskOfRuinCard.jsx";
 import KellyCard from "../components/KellyCard.jsx";
@@ -72,6 +73,18 @@ export default function Results() {
           Analyze a strategy
         </button>
       </div>
+    );
+  }
+
+  // Free tier: the server sends only the verdict. Show the teaser + Pro wall.
+  if (analysis.gating?.verdict_only) {
+    return (
+      <VerdictTeaser
+        verdict={analysis.verdict}
+        meta={analysis.meta}
+        onUnlock={openUnlock}
+        onNew={() => nav("/analyze")}
+      />
     );
   }
 

@@ -58,10 +58,10 @@ export default function Layout({ children }) {
                 Pro
               </span>
             )}
-            {!isPro && (
-              <button onClick={openUnlock} className="btn-ghost">
+            {!isPro && loc.pathname !== "/pro" && (
+              <Link to="/pro" className="btn-ghost">
                 Unlock Pro
-              </button>
+              </Link>
             )}
             {isAuthed ? (
               <button

@@ -45,13 +45,14 @@ def test_too_few_unavailable():
     assert out["available"] is False
 
 
-def test_run_analysis_includes_heatmap_free():
+def test_run_analysis_gates_heatmap():
     import analysis
     rng = np.random.default_rng(2)
     r = rng.normal(0.001, 0.02, size=250)
-    result = analysis.run_analysis(returns=r, frequency="daily", tier="free")
-    hm = result["returns_over_time"]
-    assert hm["available"] is True
-    assert hm["unit"] == "month"
-    # free tier still gets it (visualisation of the user's own data)
-    assert "returns_over_time" not in result["gating"]["locked"]
+    pro = analysis.run_analysis(returns=r, frequency="daily", tier="pro")
+    assert pro["returns_over_time"]["available"] is True
+    assert pro["returns_over_time"]["unit"] == "month"
+    # free tier sees only the verdict
+    free = analysis.run_analysis(returns=r, frequency="daily", tier="free")
+    assert free["returns_over_time"] is None
+    assert free["gating"]["verdict_only"] is True

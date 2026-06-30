@@ -191,20 +191,18 @@ def _returns():
     return np.random.default_rng(0).normal(0.0006, 0.01, 300)
 
 
-def test_free_tier_redacts_paid_fields():
+def test_free_tier_shows_verdict_only():
     res = analysis_mod.run_analysis(returns=_returns(), frequency="daily",
                                     num_trials=20, tier="free")
     assert res["gating"]["locked"]  # non-empty
-    assert res["sharpe"]["dsr"] == {"locked": True}
-    assert res["sharpe"]["haircut_sharpe"] == {"locked": True}
-    assert res["overfit"]["pbo"] == {"locked": True}
-    assert res["monte_carlo"] is None
-    assert res["charts"]["monte_carlo"] is None
-    keys = {r["key"] for r in res["explanations"]}
-    assert "dsr" not in keys and "pbo" not in keys and "montecarlo" not in keys
-    # Free still gets the hook: a real verdict and PSR.
+    assert res["gating"]["verdict_only"] is True
+    # The entire diagnostic suite is withheld from the wire on the free tier.
+    for k in ("stats", "sharpe", "overfit", "monte_carlo", "charts",
+              "explanations", "trade_dependency", "walk_forward"):
+        assert res[k] is None
+    # Free still gets the hook: a real verdict.
     assert res["verdict"]["level"] in ("red", "yellow", "green")
-    assert isinstance(res["sharpe"]["psr"], float)
+    assert res["meta"]["n_observations"] > 0
 
 
 def test_pro_tier_includes_paid_fields():

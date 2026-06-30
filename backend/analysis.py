@@ -393,30 +393,22 @@ def run_analysis(
     return clean(result)
 
 
-# Explanation rows that belong to the paid tier (stripped for free users).
-_PRO_EXPLANATION_KEYS = {"dsr", "pbo", "montecarlo", "haircut"}
+# Everything the free tier is allowed to see. The verdict (and its plain-English
+# reasons) is the hook; the entire diagnostic suite -- every metric, chart and
+# robustness check -- is Pro.
+_FREE_KEEP = {"meta", "verdict", "gating"}
 
 
 def _redact_for_free(result: dict) -> None:
-    """Remove paid data from the payload so free users can't read it off the wire.
+    """Strip the payload down to the verdict so free users can't read the paid
+    analysis off the wire. The server never sends the locked data at all.
 
-    The verdict (and its plain-English reasons) stays free -- that's the hook --
-    but the detailed Deflated Sharpe / PBO / haircut numbers, the Monte Carlo
-    analysis, and the PDF are reserved for Pro. Each removed block is replaced
-    with a ``{"locked": True}`` marker so the UI can render a lock + upsell.
+    Free users get the headline verdict + a wall; running a real analysis on
+    their own data and seeing anything beyond the verdict requires Pro. (Built-in
+    samples are served at the Pro tier as a full public demo.)
     """
-    sharpe = result.get("sharpe", {})
-    sharpe["dsr"] = {"locked": True}
-    sharpe["haircut_sharpe"] = {"locked": True}
-
-    overfit = result.get("overfit", {})
-    overfit["pbo"] = {"locked": True}
-
-    result["monte_carlo"] = None
-    if isinstance(result.get("charts"), dict):
-        result["charts"]["monte_carlo"] = None
-
-    result["explanations"] = [
-        row for row in result.get("explanations", [])
-        if row.get("key") not in _PRO_EXPLANATION_KEYS
-    ]
+    for key in list(result.keys()):
+        if key not in _FREE_KEEP:
+            result[key] = None
+    result["gating"]["verdict_only"] = True
+    result["gating"]["locked"] = list(PAID_FEATURES) + ["full_report"]

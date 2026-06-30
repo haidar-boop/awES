@@ -57,16 +57,19 @@ def test_unit_label_flows_through():
     assert "periods" in out["message"]
 
 
-def test_run_analysis_includes_dependency_free_tier():
+def test_run_analysis_gates_dependency():
     import analysis
     r = np.array([-0.01] * 35 + [0.10] * 5, dtype=float)
-    result = analysis.run_analysis(
+    pro = analysis.run_analysis(
+        returns=r, frequency="per_trade", tier="pro",
+        parse_meta={"data_kind": "trades"},
+    )
+    assert pro["trade_dependency"]["applicable"] is True
+    # Free tier sees only the verdict; the diagnostic suite is Pro.
+    free = analysis.run_analysis(
         returns=r, frequency="per_trade", tier="free",
         parse_meta={"data_kind": "trades"},
     )
-    td = result["trade_dependency"]
-    assert td["applicable"] is True
-    assert td["unit"] == "trades"
-    assert td["status"] in ("fail", "warn")
-    # stays available on the free tier (it's a core honesty hook, not gated)
-    assert td not in (None, {})
+    assert free["trade_dependency"] is None
+    assert free["gating"]["verdict_only"] is True
+    assert free["verdict"] is not None

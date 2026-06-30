@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { analyze, importStatement } from "../lib/api.js";
 import { useAuth } from "../lib/auth.jsx";
 import { pct, num, VERDICT_META } from "../lib/format.js";
@@ -49,7 +50,7 @@ function VerdictHead({ name, analysis }) {
 }
 
 export default function Compare() {
-  const { openUnlock } = useAuth();
+  const { openUnlock, isPro } = useAuth();
   const [a, setA] = useState({ name: "Strategy A", data: "", trials: 1, note: null });
   const [b, setB] = useState({ name: "Strategy B", data: "", trials: 1, note: null });
   const [frequency, setFrequency] = useState("daily");
@@ -150,6 +151,35 @@ export default function Compare() {
           </div>
         </div>
         {s.note && <p className="mt-2 font-mono text-[11px] uppercase tracking-label text-robust">{s.note}</p>}
+      </div>
+    );
+  }
+
+  if (!isPro) {
+    return (
+      <div className="mx-auto max-w-lg">
+        <div className="card relative overflow-hidden border border-data/30">
+          <span className="absolute inset-y-0 left-0 w-1 bg-data" aria-hidden="true" />
+          <div className="p-8 text-center">
+            <div className="flex justify-center">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="4.5" y="10.5" width="15" height="9.5" rx="1.6" stroke="#58A6FF" strokeWidth="1.7" />
+                <path d="M8 10.5V7.5a4 4 0 018 0v3" stroke="#58A6FF" strokeWidth="1.7" strokeLinecap="round" />
+              </svg>
+            </div>
+            <h1 className="mt-3 font-display text-2xl font-bold tracking-tight text-slate-900 dark:text-txt">
+              Strategy comparison is Pro
+            </h1>
+            <p className="mt-2 text-sm text-slate-600 dark:text-txt-muted">
+              Run two strategies through the full robustness suite side by side
+              and see which one holds up. Part of TrueSharpe Pro.
+            </p>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+              <button className="btn-primary" onClick={openUnlock}>Unlock Pro</button>
+              <Link to="/pro" className="btn-ghost">See everything in Pro →</Link>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

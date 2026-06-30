@@ -59,6 +59,12 @@ ErgodicLabs, and the academic robustness literature (PSR / DSR / PBO).
       free. (Honest: returns-only data has no parameters to re-optimise, so
       this is rolling out-of-sample consistency, not parameter walk-forward.)
 
+- [x] **Pro-only gating + pricing page** — the diagnostic suite is now Pro.
+      Free users running their own data see only the headline verdict + a wall;
+      built-in samples stay a full public demo. New `/pro` page lists everything
+      Pro includes; Compare is Pro-gated. Server sends verdict-only to free
+      (nothing leaks on the wire).
+
 ## Next (build order)
 - [ ] **#11 Portfolio combination + correlation matrix** — multi-strategy.
 - [ ] **#12 Vs. Random test** — compare to the best strategy luck produces.

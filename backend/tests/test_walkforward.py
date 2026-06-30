@@ -45,11 +45,12 @@ def test_fold_windows_tile_the_series():
     assert sum(f["n"] for f in folds) == 200
 
 
-def test_run_analysis_includes_walk_forward_free():
+def test_run_analysis_gates_walk_forward():
     import analysis
     rng = np.random.default_rng(3)
     r = rng.normal(0.001, 0.02, size=250)
-    result = analysis.run_analysis(returns=r, frequency="daily", tier="free")
-    wf = result["walk_forward"]
-    assert wf["available"] is True
-    assert "walk_forward" not in result["gating"]["locked"]
+    pro = analysis.run_analysis(returns=r, frequency="daily", tier="pro")
+    assert pro["walk_forward"]["available"] is True
+    free = analysis.run_analysis(returns=r, frequency="daily", tier="free")
+    assert free["walk_forward"] is None
+    assert free["gating"]["verdict_only"] is True
