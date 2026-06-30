@@ -7,6 +7,7 @@ import VerdictCard from "../components/VerdictCard.jsx";
 import TradeDependencyCard from "../components/TradeDependencyCard.jsx";
 import RiskOfRuinCard from "../components/RiskOfRuinCard.jsx";
 import KellyCard from "../components/KellyCard.jsx";
+import SkipTradesCard from "../components/SkipTradesCard.jsx";
 import ReturnsHeatmap from "../components/ReturnsHeatmap.jsx";
 import DrawdownRecoveryCard from "../components/DrawdownRecoveryCard.jsx";
 import MetricRow from "../components/MetricRow.jsx";
@@ -80,12 +81,14 @@ export default function Results() {
   const returnsOverTime = analysis.returns_over_time;
   const positionSizing = analysis.position_sizing;
   const drawdownRecovery = analysis.drawdown_recovery;
+  const skipTrades = analysis.skip_trades;
   const locked = new Set(analysis.gating?.locked || []);
   const isFree = locked.size > 0;
   const dsrLocked = locked.has("deflated_sharpe");
   const mcLocked = locked.has("monte_carlo");
   const rorLocked = locked.has("risk_of_ruin");
   const sizingLocked = locked.has("position_sizing");
+  const skipLocked = locked.has("skip_trades");
   const pdfLocked = locked.has("pdf_report");
 
   const rows = explanations || [];
@@ -209,6 +212,17 @@ export default function Results() {
         <LockedCard
           title="Position sizing · Kelly"
           subtitle="Growth-optimal leverage and the safer fractional Kelly sizings"
+          onUnlock={openUnlock}
+        />
+      ) : null}
+
+      {/* Missed-trade robustness (Pro) */}
+      {skipTrades?.available ? (
+        <SkipTradesCard data={skipTrades} />
+      ) : skipLocked ? (
+        <LockedCard
+          title="Missed-trade robustness"
+          subtitle="How often the edge survives when a random fraction of trades go missing"
           onUnlock={openUnlock}
         />
       ) : null}

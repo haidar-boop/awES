@@ -24,6 +24,7 @@ from engine import ruin as eruin
 from engine import heatmap as eheatmap
 from engine import kelly as ekelly
 from engine import drawdowns as edrawdowns
+from engine import skiptrades as eskiptrades
 
 # Annualization factors by reported frequency.
 FREQ_MAP = {
@@ -37,7 +38,7 @@ FREQ_MAP = {
 # Features available only on the paid tier. Free tier still gets a real,
 # useful verdict from the basics.
 PAID_FEATURES = ["deflated_sharpe", "pbo", "monte_carlo", "risk_of_ruin",
-                 "position_sizing", "pdf_report", "haircut"]
+                 "position_sizing", "skip_trades", "pdf_report", "haircut"]
 
 
 def periods_per_year(frequency: str) -> float:
@@ -307,6 +308,9 @@ def run_analysis(
     # Drawdown recovery analytics (free -- elaborates the drawdown chart).
     drawdown_recovery = edrawdowns.drawdown_analysis(returns, unit=dep_unit)
 
+    # Missed-trade robustness (Pro -- a resampling stress test like the MC cone).
+    skip_trades = eskiptrades.skip_trades_robustness(returns, unit=dep_unit) if paid else None
+
     # --- chart data --------------------------------------------------------
     strat_curve = estats.equity_curve(returns)
     dd = estats.drawdown_series(returns)
@@ -368,6 +372,7 @@ def run_analysis(
         "returns_over_time": returns_over_time,
         "position_sizing": position_sizing,
         "drawdown_recovery": drawdown_recovery,
+        "skip_trades": skip_trades,
         "charts": charts,
         "explanations": explanations,
         "gating": {

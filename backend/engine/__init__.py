@@ -27,6 +27,7 @@ from . import (
     heatmap,
     kelly,
     drawdowns,
+    skiptrades,
 )
 
 __all__ = [
@@ -42,4 +43,5 @@ __all__ = [
     "heatmap",
     "kelly",
     "drawdowns",
+    "skiptrades",
 ]

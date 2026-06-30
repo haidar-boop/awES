@@ -49,8 +49,11 @@ ErgodicLabs, and the academic robustness literature (PSR / DSR / PBO).
       underwater, longest underwater stretch, and whether the strategy is
       still below a prior peak now. `engine/drawdowns.py`, free.
 
+- [x] **#9 Missed-trade robustness (skip-trades MC)** — randomly drops 5/10/20%
+      of trades over 1,000 sims and reports how often the edge stays profitable.
+      The stochastic cousin of #2. `engine/skiptrades.py`, Pro.
+
 ## Next (build order)
-- [ ] **#9 Monte Carlo skip-trades variant** — stress missed-trade sensitivity.
 - [ ] **#10 Walk-forward analysis** — rolling in/out windows (full version of
       the current OOS degradation check).
 - [ ] **#11 Portfolio combination + correlation matrix** — multi-strategy.
