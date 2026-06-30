@@ -4,6 +4,7 @@ import { useAnalysis } from "../lib/store.jsx";
 import { useAuth } from "../lib/auth.jsx";
 import { downloadReport } from "../lib/api.js";
 import VerdictCard from "../components/VerdictCard.jsx";
+import TradeDependencyCard from "../components/TradeDependencyCard.jsx";
 import MetricRow from "../components/MetricRow.jsx";
 import ShareCard from "../components/ShareCard.jsx";
 import LockedCard from "../components/LockedCard.jsx";
@@ -69,6 +70,7 @@ export default function Results() {
 
   const { verdict, stats, sharpe, charts, explanations, meta, monte_carlo } =
     analysis;
+  const tradeDependency = analysis.trade_dependency;
   const locked = new Set(analysis.gating?.locked || []);
   const isFree = locked.size > 0;
   const dsrLocked = locked.has("deflated_sharpe");
@@ -173,6 +175,9 @@ export default function Results() {
           onUnlock={openUnlock}
         />
       </div>
+
+      {/* Trade-dependency / concentration (free) */}
+      {tradeDependency && <TradeDependencyCard data={tradeDependency} />}
 
       {/* Metrics */}
       <div className="card p-5">

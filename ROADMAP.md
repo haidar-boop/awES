@@ -18,9 +18,11 @@ ErgodicLabs, and the academic robustness literature (PSR / DSR / PBO).
       cTrader / generic CSV → auto-extracts the P&L (or balance) column into the
       analyze flow. `backend/statement_import.py` + `/api/import`.
 
+- [x] **#2 Trade-dependency test** — "remove the top N trades; does the edge
+      survive?" + outlier-concentration flag. `engine/dependency.py`, free,
+      surfaced as a card on Results.
+
 ## Next (build order)
-- [ ] **#2 Trade-dependency test** — "remove the top N trades; does the edge
-      survive?" + outlier-concentration flag. (Highest brand fit, low effort.)
 - [ ] **#3 Risk of Ruin** — probability of hitting -X% / ruin thresholds, from
       the existing Monte Carlo. Surface worst-case (5th-pct) max drawdown.
 - [ ] **#4 Monthly / calendar returns heatmap** — P&L by period.

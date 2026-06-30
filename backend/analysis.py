@@ -19,6 +19,7 @@ from engine import overfit as eoverfit
 from engine import montecarlo as emc
 from engine import benchmark as ebench
 from engine import verdict as everdict
+from engine import dependency as edependency
 
 # Annualization factors by reported frequency.
 FREQ_MAP = {
@@ -280,6 +281,11 @@ def run_analysis(
         sharpe=sharpe, overfit=overfit, benchmark=bench, n_observations=n
     )
 
+    # Trade-dependency / outlier-concentration test (free -- a core honesty
+    # hook). Treats each observation as a trade/period.
+    dep_unit = "trades" if (parse_meta or {}).get("data_kind") == "trades" else "periods"
+    trade_dependency = edependency.trade_dependency(returns, unit=dep_unit)
+
     # --- chart data --------------------------------------------------------
     strat_curve = estats.equity_curve(returns)
     dd = estats.drawdown_series(returns)
@@ -336,6 +342,7 @@ def run_analysis(
         "overfit": overfit,
         "monte_carlo": mc,
         "benchmark": bench,
+        "trade_dependency": trade_dependency,
         "charts": charts,
         "explanations": explanations,
         "gating": {

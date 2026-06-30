@@ -22,6 +22,7 @@ from . import (
     montecarlo,
     benchmark,
     verdict,
+    dependency,
 )
 
 __all__ = [
@@ -32,4 +33,5 @@ __all__ = [
     "montecarlo",
     "benchmark",
     "verdict",
+    "dependency",
 ]
