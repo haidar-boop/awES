@@ -8,6 +8,7 @@ import TradeDependencyCard from "../components/TradeDependencyCard.jsx";
 import RiskOfRuinCard from "../components/RiskOfRuinCard.jsx";
 import KellyCard from "../components/KellyCard.jsx";
 import ReturnsHeatmap from "../components/ReturnsHeatmap.jsx";
+import DrawdownRecoveryCard from "../components/DrawdownRecoveryCard.jsx";
 import MetricRow from "../components/MetricRow.jsx";
 import ShareCard from "../components/ShareCard.jsx";
 import SaveButton from "../components/SaveButton.jsx";
@@ -78,6 +79,7 @@ export default function Results() {
   const riskOfRuin = analysis.risk_of_ruin;
   const returnsOverTime = analysis.returns_over_time;
   const positionSizing = analysis.position_sizing;
+  const drawdownRecovery = analysis.drawdown_recovery;
   const locked = new Set(analysis.gating?.locked || []);
   const isFree = locked.size > 0;
   const dsrLocked = locked.has("deflated_sharpe");
@@ -268,6 +270,9 @@ export default function Results() {
           </div>
         ) : null}
       </div>
+
+      {/* Drawdown recovery (free) */}
+      {drawdownRecovery?.available && <DrawdownRecoveryCard data={drawdownRecovery} />}
 
       {/* Returns-over-time heatmap (free) */}
       {returnsOverTime?.available && <ReturnsHeatmap data={returnsOverTime} />}

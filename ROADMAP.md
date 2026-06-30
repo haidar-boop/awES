@@ -45,8 +45,11 @@ ErgodicLabs, and the academic robustness literature (PSR / DSR / PBO).
       page. One-time table setup: `supabase/saved_analyses.sql`. Frontend-only
       (Supabase client + RLS, no backend change).
 
+- [x] **#8 Drawdown recovery** — per-episode recovery times, total time
+      underwater, longest underwater stretch, and whether the strategy is
+      still below a prior peak now. `engine/drawdowns.py`, free.
+
 ## Next (build order)
-- [ ] **#8 Drawdown recovery** — recovery-time + underwater framing.
 - [ ] **#9 Monte Carlo skip-trades variant** — stress missed-trade sensitivity.
 - [ ] **#10 Walk-forward analysis** — rolling in/out windows (full version of
       the current OOS degradation check).
