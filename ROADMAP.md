@@ -26,8 +26,12 @@ ErgodicLabs, and the academic robustness literature (PSR / DSR / PBO).
       off the Monte Carlo paths, + worst-case (5th-pct) drawdown and chance of a
       losing run. `engine/ruin.py`, Pro (derived from the paid simulation).
 
+- [x] **#4 Returns-over-time heatmap** — buckets the series into ~monthly
+      (frequency-aware) periods and colors each by compounded return, showing
+      whether the edge is steady or lumpy. `engine/heatmap.py`, free. (No real
+      dates are claimed — the parser strips them — so buckets are sequential.)
+
 ## Next (build order)
-- [ ] **#4 Monthly / calendar returns heatmap** — P&L by period.
 - [ ] **#5 Position sizing / Kelly** — Full → ½ → ¼ → 1/10 Kelly readout.
 - [ ] **#6 Compare two strategies** — side-by-side verdicts + metrics.
 - [ ] **#7 Save / strategy history** — Supabase Postgres (not Render's

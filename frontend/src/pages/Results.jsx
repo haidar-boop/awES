@@ -6,6 +6,7 @@ import { downloadReport } from "../lib/api.js";
 import VerdictCard from "../components/VerdictCard.jsx";
 import TradeDependencyCard from "../components/TradeDependencyCard.jsx";
 import RiskOfRuinCard from "../components/RiskOfRuinCard.jsx";
+import ReturnsHeatmap from "../components/ReturnsHeatmap.jsx";
 import MetricRow from "../components/MetricRow.jsx";
 import ShareCard from "../components/ShareCard.jsx";
 import LockedCard from "../components/LockedCard.jsx";
@@ -73,6 +74,7 @@ export default function Results() {
     analysis;
   const tradeDependency = analysis.trade_dependency;
   const riskOfRuin = analysis.risk_of_ruin;
+  const returnsOverTime = analysis.returns_over_time;
   const locked = new Set(analysis.gating?.locked || []);
   const isFree = locked.size > 0;
   const dsrLocked = locked.has("deflated_sharpe");
@@ -250,6 +252,9 @@ export default function Results() {
           </div>
         ) : null}
       </div>
+
+      {/* Returns-over-time heatmap (free) */}
+      {returnsOverTime?.available && <ReturnsHeatmap data={returnsOverTime} />}
 
       {/* Detailed extras */}
       {detailed && (

@@ -21,6 +21,7 @@ from engine import benchmark as ebench
 from engine import verdict as everdict
 from engine import dependency as edependency
 from engine import ruin as eruin
+from engine import heatmap as eheatmap
 
 # Annualization factors by reported frequency.
 FREQ_MAP = {
@@ -295,6 +296,9 @@ def run_analysis(
         if mc else None
     )
 
+    # Returns-over-time heatmap (free) -- consistency of the edge across time.
+    returns_over_time = eheatmap.returns_heatmap(returns, frequency)
+
     # --- chart data --------------------------------------------------------
     strat_curve = estats.equity_curve(returns)
     dd = estats.drawdown_series(returns)
@@ -353,6 +357,7 @@ def run_analysis(
         "benchmark": bench,
         "trade_dependency": trade_dependency,
         "risk_of_ruin": risk_of_ruin,
+        "returns_over_time": returns_over_time,
         "charts": charts,
         "explanations": explanations,
         "gating": {
