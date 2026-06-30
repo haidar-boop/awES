@@ -31,8 +31,11 @@ ErgodicLabs, and the academic robustness literature (PSR / DSR / PBO).
       whether the edge is steady or lumpy. `engine/heatmap.py`, free. (No real
       dates are claimed — the parser strips them — so buckets are sequential.)
 
+- [x] **#5 Position sizing / Kelly** — full + fractional (½ / ¼ / 1/10) Kelly
+      leverage and the volatility each implies, with an honest "size below the
+      math" caveat. `engine/kelly.py`, Pro.
+
 ## Next (build order)
-- [ ] **#5 Position sizing / Kelly** — Full → ½ → ¼ → 1/10 Kelly readout.
 - [ ] **#6 Compare two strategies** — side-by-side verdicts + metrics.
 - [ ] **#7 Save / strategy history** — Supabase Postgres (not Render's
       ephemeral disk).
@@ -46,6 +49,14 @@ ErgodicLabs, and the academic robustness literature (PSR / DSR / PBO).
 - [ ] **#14 Parameter-permutation stability** — needs parameterized input.
 - [ ] **#15 "Validation Plan"** — turn a result into prioritized, specific next
       steps (the honest version of a generated plan; Pro feature).
+
+## Parked / backlog (revisit later)
+- **Real calendar dates in the heatmap** — #4 groups returns into *sequential*
+  buckets because the parser strips dates. To show true Jan–Dec months /
+  seasonality, capture dates through `parsing.py` and group by real month when
+  the user's data includes them (fall back to sequential when it doesn't).
+- **Trade-dependency + risk-of-ruin in the PDF report** — both are in the web
+  UI but not yet written into the downloadable PDF.
 
 ## Deliberately NOT building (off-brand)
 - Strategy generation / optimization — manufactures the overfitting we exist to

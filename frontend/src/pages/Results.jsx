@@ -6,6 +6,7 @@ import { downloadReport } from "../lib/api.js";
 import VerdictCard from "../components/VerdictCard.jsx";
 import TradeDependencyCard from "../components/TradeDependencyCard.jsx";
 import RiskOfRuinCard from "../components/RiskOfRuinCard.jsx";
+import KellyCard from "../components/KellyCard.jsx";
 import ReturnsHeatmap from "../components/ReturnsHeatmap.jsx";
 import MetricRow from "../components/MetricRow.jsx";
 import ShareCard from "../components/ShareCard.jsx";
@@ -75,11 +76,13 @@ export default function Results() {
   const tradeDependency = analysis.trade_dependency;
   const riskOfRuin = analysis.risk_of_ruin;
   const returnsOverTime = analysis.returns_over_time;
+  const positionSizing = analysis.position_sizing;
   const locked = new Set(analysis.gating?.locked || []);
   const isFree = locked.size > 0;
   const dsrLocked = locked.has("deflated_sharpe");
   const mcLocked = locked.has("monte_carlo");
   const rorLocked = locked.has("risk_of_ruin");
+  const sizingLocked = locked.has("position_sizing");
   const pdfLocked = locked.has("pdf_report");
 
   const rows = explanations || [];
@@ -191,6 +194,17 @@ export default function Results() {
         <LockedCard
           title="Risk of ruin"
           subtitle="Probability of a deep drawdown across thousands of resampled runs"
+          onUnlock={openUnlock}
+        />
+      ) : null}
+
+      {/* Position sizing / Kelly (Pro) */}
+      {positionSizing?.available ? (
+        <KellyCard data={positionSizing} />
+      ) : sizingLocked ? (
+        <LockedCard
+          title="Position sizing · Kelly"
+          subtitle="Growth-optimal leverage and the safer fractional Kelly sizings"
           onUnlock={openUnlock}
         />
       ) : null}

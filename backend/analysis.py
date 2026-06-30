@@ -22,6 +22,7 @@ from engine import verdict as everdict
 from engine import dependency as edependency
 from engine import ruin as eruin
 from engine import heatmap as eheatmap
+from engine import kelly as ekelly
 
 # Annualization factors by reported frequency.
 FREQ_MAP = {
@@ -35,7 +36,7 @@ FREQ_MAP = {
 # Features available only on the paid tier. Free tier still gets a real,
 # useful verdict from the basics.
 PAID_FEATURES = ["deflated_sharpe", "pbo", "monte_carlo", "risk_of_ruin",
-                 "pdf_report", "haircut"]
+                 "position_sizing", "pdf_report", "haircut"]
 
 
 def periods_per_year(frequency: str) -> float:
@@ -299,6 +300,9 @@ def run_analysis(
     # Returns-over-time heatmap (free) -- consistency of the edge across time.
     returns_over_time = eheatmap.returns_heatmap(returns, frequency)
 
+    # Kelly position sizing (Pro -- actionable "what do I do with this" guidance).
+    position_sizing = ekelly.kelly_sizing(returns, ppy) if paid else None
+
     # --- chart data --------------------------------------------------------
     strat_curve = estats.equity_curve(returns)
     dd = estats.drawdown_series(returns)
@@ -358,6 +362,7 @@ def run_analysis(
         "trade_dependency": trade_dependency,
         "risk_of_ruin": risk_of_ruin,
         "returns_over_time": returns_over_time,
+        "position_sizing": position_sizing,
         "charts": charts,
         "explanations": explanations,
         "gating": {

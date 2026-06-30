@@ -25,6 +25,7 @@ from . import (
     dependency,
     ruin,
     heatmap,
+    kelly,
 )
 
 __all__ = [
@@ -38,4 +39,5 @@ __all__ = [
     "dependency",
     "ruin",
     "heatmap",
+    "kelly",
 ]
