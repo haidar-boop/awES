@@ -14,42 +14,92 @@ body,
 
 body {
   @apply bg-slate-50 text-slate-900 antialiased;
+  font-feature-settings: "cv05" 1, "ss01" 1;
 }
 
+/* Instrument graphite shell (dark = primary identity) */
 .dark body {
-  @apply bg-slate-950 text-slate-100;
+  @apply bg-ink-base text-txt antialiased;
+  background-image:
+    radial-gradient(60rem 60rem at 78% -10%, #58a6ff0a, transparent 60%),
+    linear-gradient(180deg, #10141a 0%, #0d1117 32%);
+  background-attachment: fixed;
+}
+
+/* Tabular figures everywhere numbers live */
+.font-mono,
+.tnum,
+code,
+kbd,
+pre {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 1;
 }
 
 @layer components {
   .card {
     @apply rounded-xl border border-slate-200 bg-white shadow-sm
-      dark:border-slate-800 dark:bg-slate-900;
+      dark:border-ink-edge dark:bg-ink-panel dark:shadow-none;
+  }
+  /* Elevated instrument surface */
+  .panel {
+    @apply rounded-lg border border-slate-200 bg-white
+      dark:border-ink-edge dark:bg-ink-elevated;
   }
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2
-      text-sm font-semibold transition focus:outline-none focus:ring-2
-      focus:ring-brand/50 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2
+      text-sm font-semibold tracking-tight transition focus:outline-none
+      focus-visible:ring-2 focus-visible:ring-data/60 disabled:cursor-not-allowed
+      disabled:opacity-50;
   }
   .btn-primary {
-    @apply btn bg-brand text-white hover:bg-brand-dark;
+    @apply btn bg-data text-ink-base hover:bg-brand-dark
+      dark:text-ink-base;
   }
   .btn-ghost {
     @apply btn border border-slate-300 bg-transparent text-slate-700
-      hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200
-      dark:hover:bg-slate-800;
+      hover:bg-slate-100 dark:border-ink-edge dark:bg-ink-elevated/40
+      dark:text-txt dark:hover:bg-ink-elevated dark:hover:border-txt-faint;
   }
   .input {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm
-      text-slate-900 focus:border-brand focus:outline-none focus:ring-1
-      focus:ring-brand dark:border-slate-700 dark:bg-slate-900
-      dark:text-slate-100;
+    @apply w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm
+      text-slate-900 transition focus:border-data focus:outline-none
+      focus:ring-1 focus:ring-data dark:border-ink-edge dark:bg-ink-deep
+      dark:text-txt dark:placeholder:text-txt-faint;
   }
   .label {
-    @apply mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300;
+    @apply mb-1 block text-[11px] font-semibold uppercase tracking-label
+      text-slate-500 dark:text-txt-muted;
+  }
+  /* Instrumentation label — monospace, spaced, quiet */
+  .mono-label {
+    @apply font-mono text-[11px] font-medium uppercase tracking-label
+      text-slate-500 dark:text-txt-muted;
+  }
+  /* Thin separating rule */
+  .hairline {
+    @apply border-slate-200 dark:border-ink-edge;
   }
 }
 
-/* Recharts tooltip readability in dark mode */
+/* Recharts readability on graphite */
 .recharts-default-tooltip {
-  @apply !rounded-lg !border !border-slate-700 !bg-slate-900 !text-slate-100;
+  @apply !rounded-md !border !border-ink-edge !bg-ink-elevated !text-txt;
+  font-family: "IBM Plex Mono", ui-monospace, monospace !important;
+  font-size: 12px !important;
+}
+.recharts-cartesian-axis-tick-value {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+/* Honour reduced-motion fully */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
