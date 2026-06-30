@@ -44,6 +44,14 @@ export async function fetchSamples() {
   return jsonOrThrow(await fetch("/api/samples"));
 }
 
+// Upload a broker / platform export (MT4/MT5 HTML, TradingView/MT5 XLSX, cTrader
+// or generic CSV); the server returns the extracted P&L / equity column as text.
+export async function importStatement(file) {
+  const form = new FormData();
+  form.append("file", file);
+  return jsonOrThrow(await fetch("/api/import", { method: "POST", body: form }));
+}
+
 export async function getConfig() {
   return jsonOrThrow(await fetch("/api/config"));
 }

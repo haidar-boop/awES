@@ -16,7 +16,7 @@ import json
 import os
 
 import numpy as np
-from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi import FastAPI, File, Header, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -29,6 +29,7 @@ import parsing
 import payments
 import report as report_mod
 import sample_data
+import statement_import
 
 # Public Supabase config baked in as defaults so the app works without extra
 # host setup. The publishable/anon key is designed to be public (it ships to
@@ -278,6 +279,34 @@ def analyze(req: AnalyzeRequest, authorization: str | None = Header(default=None
     except Exception as e:
         raise HTTPException(400, f"Analysis failed: {e}")
     return result
+
+
+@app.post("/api/import")
+async def import_statement(file: UploadFile = File(...)):
+    """Extract the P&L / equity series from a broker or platform export.
+
+    Parses MT4/MT5 HTML statements, TradingView / MT5 XLSX reports, and cTrader
+    or generic multi-column CSVs into the single numeric column the normal
+    analyze flow consumes. It does NOT analyse or gate anything -- the returned
+    text is fed back through /api/analyze like any pasted data.
+    """
+    content = await file.read()
+    try:
+        result = statement_import.parse_statement(content, file.filename or "")
+    except statement_import.ImportError_ as e:
+        raise HTTPException(400, str(e))
+    except Exception as e:  # malformed/corrupt files
+        raise HTTPException(400, f"Could not read that file: {e}")
+    if result.n < 2:
+        raise HTTPException(400, "Found fewer than 2 values to analyze in that file.")
+    return {
+        "text": result.text,
+        "kind": result.kind,            # "trades" | "equity"
+        "column": result.column,
+        "source_format": result.source_format,
+        "n": result.n,
+        "notes": result.notes,
+    }
 
 
 @app.post("/api/ai/analyze-strategy")

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { analyze, fetchSample } from "../lib/api.js";
+import { analyze, fetchSample, importStatement } from "../lib/api.js";
 import { useAnalysis } from "../lib/store.jsx";
 import Tooltip from "../components/Tooltip.jsx";
 import StrategyCodeAnalyzer from "../components/StrategyCodeAnalyzer.jsx";
@@ -27,6 +27,8 @@ export default function Analyze() {
   const [confidence, setConfidence] = useState(0.95);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [importing, setImporting] = useState(false);
+  const [importInfo, setImportInfo] = useState(null);
 
   function onFile(e, setter) {
     const file = e.target.files?.[0];
@@ -38,6 +40,53 @@ export default function Analyze() {
     const reader = new FileReader();
     reader.onload = () => setter(String(reader.result || ""));
     reader.readAsText(file);
+  }
+
+  const SOURCE_LABEL = {
+    mt4_mt5_html: "MT4 / MT5 statement",
+    xlsx: "spreadsheet export",
+    csv: "CSV export",
+  };
+
+  // Import a broker / platform export: the server extracts the P&L (or equity)
+  // column and we drop it into the form so the normal analyze flow runs on it.
+  async function onImport(e) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-selecting the same file
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setError("File exceeds the 5 MB limit.");
+      return;
+    }
+    setError(null);
+    setImportInfo(null);
+    setImporting(true);
+    try {
+      const res = await importStatement(file);
+      setData(res.text);
+      if (res.kind === "trades") {
+        setDataKind("trades");
+        setValueType("auto");
+        setFrequency("per_trade");
+      } else {
+        setDataKind("timeseries");
+        setValueType("equity");
+      }
+      setImportInfo({
+        source: SOURCE_LABEL[res.source_format] || "export",
+        n: res.n,
+        kind: res.kind,
+        column: res.column,
+        notes: res.notes || [],
+      });
+    } catch (err) {
+      setError(
+        err.message ||
+          "Could not read that file. Try exporting as CSV, or paste your data below."
+      );
+    } finally {
+      setImporting(false);
+    }
   }
 
   async function submit() {
@@ -110,6 +159,50 @@ export default function Analyze() {
               {error}
             </div>
           )}
+
+          {/* Import from a trading platform */}
+          <div className="card p-5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 className="mono-label">Import from your platform</h2>
+                <p className="mt-1 text-sm text-slate-600 dark:text-txt-muted">
+                  Upload an MT4 / MT5 statement, TradingView or cTrader export
+                  and we’ll pull out your P&amp;L automatically — no manual
+                  formatting.
+                </p>
+              </div>
+              <label className={`btn-primary cursor-pointer ${importing ? "pointer-events-none opacity-60" : ""}`}>
+                {importing ? "Reading…" : "Import statement"}
+                <input
+                  type="file"
+                  accept=".htm,.html,.xlsx,.csv,.txt"
+                  className="hidden"
+                  onChange={onImport}
+                  disabled={importing}
+                />
+              </label>
+            </div>
+            <p className="mt-2 font-mono text-[11px] uppercase tracking-label text-txt-faint">
+              MT4 / MT5 (.htm)&nbsp;·&nbsp;TradingView / MT5 (.xlsx)&nbsp;·&nbsp;cTrader / CSV
+            </p>
+            {importInfo && (
+              <div className="mt-3 rounded-md border border-robust/30 bg-robust/5 px-3 py-2.5 text-sm">
+                <p className="flex items-center gap-2 font-medium text-robust">
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                    <path d="M2.5 7.5l3 3 6-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  Imported {importInfo.n}{" "}
+                  {importInfo.kind === "trades" ? "trades" : "points"} from your{" "}
+                  {importInfo.source}
+                </p>
+                <p className="mt-1 text-xs text-slate-600 dark:text-txt-muted">
+                  Read the <span className="font-mono">{importInfo.column}</span>{" "}
+                  column. Review it below and run the analysis.
+                  {importInfo.notes.length > 0 && " " + importInfo.notes.join(" ")}
+                </p>
+              </div>
+            )}
+          </div>
 
           {/* Data input */}
           <div className="card p-5">
