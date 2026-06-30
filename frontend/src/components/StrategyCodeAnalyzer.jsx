@@ -51,7 +51,7 @@ function Finding({ f }) {
             <p><span className="font-semibold">Why it matters: </span>{f.why}</p>
           )}
           {f.fix && (
-            <p className="text-slate-600 dark:text-slate-300">
+            <p className="text-slate-600 dark:text-txt-muted">
               <span className="font-semibold">Suggested fix: </span>{f.fix}
             </p>
           )}

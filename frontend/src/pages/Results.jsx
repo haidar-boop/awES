@@ -57,7 +57,7 @@ export default function Results() {
     return (
       <div className="card mx-auto max-w-lg p-8 text-center">
         <h2 className="text-xl font-bold">No analysis yet</h2>
-        <p className="mt-2 text-slate-600 dark:text-slate-300">
+        <p className="mt-2 text-slate-600 dark:text-txt-muted">
           Run a strategy first to see your reality check.
         </p>
         <button className="btn-primary mt-4" onClick={() => nav("/analyze")}>
@@ -140,7 +140,7 @@ export default function Results() {
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand/30 bg-brand/5 px-5 py-4">
           <div>
             <p className="font-semibold">You’re viewing the free report.</p>
-            <p className="text-sm text-slate-600 dark:text-slate-300">
+            <p className="text-sm text-slate-600 dark:text-txt-muted">
               Unlock Pro for the Deflated Sharpe, PBO, Monte Carlo simulation, and
               the downloadable PDF audit.
             </p>
@@ -153,7 +153,7 @@ export default function Results() {
 
       {/* Parsing notes */}
       {meta.parse?.conversions?.length > 0 && (
-        <div className="card p-4 text-sm text-slate-600 dark:text-slate-300">
+        <div className="card p-4 text-sm text-slate-600 dark:text-txt-muted">
           <span className="font-semibold">How we read your data: </span>
           {meta.parse.conversions.join(" ")}
         </div>

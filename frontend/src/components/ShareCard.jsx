@@ -157,7 +157,7 @@ export default function ShareCard({ analysis }) {
 
   return (
     <button className="btn-ghost" onClick={share} disabled={busy} title="Share or save a result image">
-      {busy ? "…" : done ? "Saved ✓" : "Share result"}
+      {busy ? "…" : done ? "Saved" : "Share result"}
     </button>
   );
 }
