@@ -35,8 +35,11 @@ ErgodicLabs, and the academic robustness literature (PSR / DSR / PBO).
       leverage and the volatility each implies, with an honest "size below the
       math" caveat. `engine/kelly.py`, Pro.
 
+- [x] **#6 Compare two strategies** — side-by-side verdicts + metrics with
+      winner highlighting and an equity overlay. New `/compare` page that
+      composes the existing `/api/analyze` twice (no backend change). Free.
+
 ## Next (build order)
-- [ ] **#6 Compare two strategies** — side-by-side verdicts + metrics.
 - [ ] **#7 Save / strategy history** — Supabase Postgres (not Render's
       ephemeral disk).
 - [ ] **#8 Drawdown recovery** — recovery-time + underwater framing.
