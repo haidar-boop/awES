@@ -29,12 +29,12 @@ export default function HistogramChart({ data }) {
           <YAxis tick={AXIS} width={40} />
           <Tooltip labelFormatter={(l) => `Return ${l}%`} />
           <Legend />
-          <Bar dataKey="count" name="Observed" fill="#2563eb" fillOpacity={0.7} />
+          <Bar dataKey="count" name="Observed" fill="#58A6FF" fillOpacity={0.65} />
           <Line
             type="monotone"
             dataKey="normal"
             name="If normal"
-            stroke="#f59e0b"
+            stroke="#D9A441"
             dot={false}
             strokeWidth={2}
           />

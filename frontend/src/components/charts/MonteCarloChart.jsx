@@ -45,11 +45,11 @@ export default function MonteCarloChart({ data }) {
           />
           <Legend />
           <Area dataKey="base" stackId="cone" stroke="none" fill="transparent" legendType="none" name=" " />
-          <Area dataKey="band5_25" stackId="cone" stroke="none" fill="#3b82f6" fillOpacity={0.12} name="5–95%" />
-          <Area dataKey="band25_75" stackId="cone" stroke="none" fill="#3b82f6" fillOpacity={0.25} name="25–75%" />
-          <Area dataKey="band75_95" stackId="cone" stroke="none" fill="#3b82f6" fillOpacity={0.12} legendType="none" name=" " />
-          <Line type="monotone" dataKey="median" name="Median" stroke="#3b82f6" dot={false} strokeWidth={1} strokeDasharray="3 3" />
-          <Line type="monotone" dataKey="actual" name="Actual" stroke="#dc2626" dot={false} strokeWidth={2.2} />
+          <Area dataKey="band5_25" stackId="cone" stroke="none" fill="#58A6FF" fillOpacity={0.12} name="5–95%" />
+          <Area dataKey="band25_75" stackId="cone" stroke="none" fill="#58A6FF" fillOpacity={0.26} name="25–75%" />
+          <Area dataKey="band75_95" stackId="cone" stroke="none" fill="#58A6FF" fillOpacity={0.12} legendType="none" name=" " />
+          <Line type="monotone" dataKey="median" name="Median" stroke="#58A6FF" dot={false} strokeWidth={1} strokeDasharray="3 3" />
+          <Line type="monotone" dataKey="actual" name="Actual" stroke="#E5534B" dot={false} strokeWidth={2.2} />
         </ComposedChart>
       </ResponsiveContainer>
     </ChartCard>

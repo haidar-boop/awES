@@ -35,7 +35,7 @@ export default function EquityChart({ data }) {
             type="monotone"
             dataKey="strategy"
             name="Strategy"
-            stroke="#2563eb"
+            stroke="#58A6FF"
             dot={false}
             strokeWidth={2}
           />
@@ -44,7 +44,7 @@ export default function EquityChart({ data }) {
               type="monotone"
               dataKey="benchmark"
               name="Buy & hold"
-              stroke="#94a3b8"
+              stroke="#8B97A6"
               dot={false}
               strokeWidth={1.5}
               strokeDasharray="5 4"

@@ -26,11 +26,11 @@ export default function RollingSharpeChart({ data }) {
             formatter={(v) => (v == null ? "n/a" : Number(v).toFixed(2))}
             labelFormatter={(l) => `Period ${l}`}
           />
-          <ReferenceLine y={0} stroke="#94a3b8" strokeDasharray="3 3" />
+          <ReferenceLine y={0} stroke="#8B97A6" strokeDasharray="3 3" />
           <Line
             type="monotone"
             dataKey="sharpe"
-            stroke="#10b981"
+            stroke="#3FB68B"
             dot={false}
             strokeWidth={2}
           />

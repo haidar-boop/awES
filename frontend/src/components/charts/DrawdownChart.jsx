@@ -28,9 +28,9 @@ export default function DrawdownChart({ data }) {
           <Area
             type="monotone"
             dataKey="dd"
-            stroke="#dc2626"
-            fill="#dc2626"
-            fillOpacity={0.3}
+            stroke="#E5534B"
+            fill="#E5534B"
+            fillOpacity={0.22}
             strokeWidth={1.2}
           />
         </AreaChart>
