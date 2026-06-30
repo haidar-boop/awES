@@ -15,36 +15,44 @@ export function int(x) {
   return Math.round(x).toLocaleString();
 }
 
+// Verdict presentation. `zone` (0..1) places the gauge needle; `accent` is the
+// raw hex for canvas/SVG; class fields drive the diagnostic panel styling.
 export const VERDICT_META = {
   green: {
     label: "Holds up so far",
-    emoji: "🟢",
-    ring: "ring-verdict-green",
-    bg: "bg-green-600",
-    text: "text-green-600",
-    soft: "bg-green-50 dark:bg-green-950/40 border-green-600/40",
+    code: "ROBUST",
+    accent: "#3FB68B",
+    zone: 0.84,
+    text: "text-robust",
+    bg: "bg-robust",
+    chip: "bg-robust/10 text-robust",
+    soft: "border-robust/40",
   },
   yellow: {
     label: "Inconclusive",
-    emoji: "🟡",
-    ring: "ring-verdict-yellow",
-    bg: "bg-amber-500",
-    text: "text-amber-600",
-    soft: "bg-amber-50 dark:bg-amber-950/40 border-amber-500/40",
+    code: "INCONCLUSIVE",
+    accent: "#D9A441",
+    zone: 0.5,
+    text: "text-caution",
+    bg: "bg-caution",
+    chip: "bg-caution/10 text-caution",
+    soft: "border-caution/40",
   },
   red: {
     label: "Likely overfit",
-    emoji: "🔴",
-    ring: "ring-verdict-red",
-    bg: "bg-red-600",
-    text: "text-red-600",
-    soft: "bg-red-50 dark:bg-red-950/40 border-red-600/40",
+    code: "OVERFIT",
+    accent: "#E5534B",
+    zone: 0.16,
+    text: "text-overfit",
+    bg: "bg-overfit",
+    chip: "bg-overfit/10 text-overfit",
+    soft: "border-overfit/40",
   },
 };
 
 export const STATUS_META = {
-  pass: { dot: "bg-green-500", text: "text-green-600", label: "Pass" },
-  warn: { dot: "bg-amber-500", text: "text-amber-600", label: "Caution" },
-  fail: { dot: "bg-red-500", text: "text-red-600", label: "Fail" },
-  info: { dot: "bg-slate-400", text: "text-slate-500", label: "Info" },
+  pass: { dot: "bg-robust", text: "text-robust", label: "Pass" },
+  warn: { dot: "bg-caution", text: "text-caution", label: "Caution" },
+  fail: { dot: "bg-overfit", text: "text-overfit", label: "Fail" },
+  info: { dot: "bg-txt-faint", text: "text-txt-muted", label: "Info" },
 };
