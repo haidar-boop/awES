@@ -5,6 +5,7 @@ import { useAuth } from "../lib/auth.jsx";
 import { downloadReport } from "../lib/api.js";
 import VerdictCard from "../components/VerdictCard.jsx";
 import MetricRow from "../components/MetricRow.jsx";
+import ShareCard from "../components/ShareCard.jsx";
 import LockedCard from "../components/LockedCard.jsx";
 import EquityChart from "../components/charts/EquityChart.jsx";
 import DrawdownChart from "../components/charts/DrawdownChart.jsx";
@@ -110,6 +111,7 @@ export default function Results() {
           <button className="btn-ghost" onClick={() => nav("/analyze")}>
             New analysis
           </button>
+          <ShareCard analysis={analysis} />
           <button className="btn-primary" onClick={onDownload} disabled={downloading}>
             {downloading ? "Generating…" : pdfLocked ? "🔒 PDF report" : "Download PDF"}
           </button>
