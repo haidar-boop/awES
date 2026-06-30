@@ -97,6 +97,17 @@ export function AuthProvider({ children }) {
     async (email, password) => client.auth.signInWithPassword({ email, password }),
     [client]
   );
+  // OAuth (Google / Apple / GitHub). The provider must be enabled in the
+  // Supabase dashboard; the browser is redirected out and back, and the
+  // returning session is picked up by detectSessionInUrl above.
+  const signInWithProvider = useCallback(
+    async (provider) =>
+      client.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: window.location.origin },
+      }),
+    [client]
+  );
   const signOut = useCallback(async () => {
     await client?.auth.signOut();
     setMe({ authenticated: false, pro: false });
@@ -115,7 +126,7 @@ export function AuthProvider({ children }) {
         config, client, session, me, ready,
         isAuthed: !!me.authenticated, isVerified: !!me.verified, isPro: !!me.pro,
         email: me.email || session?.user?.email || "",
-        signUp, signIn, signOut, resend, refreshMe,
+        signUp, signIn, signInWithProvider, signOut, resend, refreshMe,
         unlockOpen, openUnlock, closeUnlock,
       }}
     >

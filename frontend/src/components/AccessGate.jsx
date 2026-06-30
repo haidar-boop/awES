@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../lib/auth.jsx";
+import SocialAuthButtons from "./SocialAuthButtons.jsx";
 
 // First-impression access threshold. This is a VISUAL gate only — it never
 // changes backend auth logic and never blocks the free tool. Real sign-in,
@@ -168,8 +169,18 @@ export default function AccessGate({ children }) {
               measurement of whether an edge survives scrutiny.
             </p>
 
+            {/* (C) Social sign-up */}
+            <div className="mt-6">
+              <SocialAuthButtons onError={setErr} verb="Sign up" />
+            </div>
+            <div className="my-4 flex items-center gap-3">
+              <span className="h-px flex-1 bg-ink-edge" />
+              <span className="mono-label">or with email</span>
+              <span className="h-px flex-1 bg-ink-edge" />
+            </div>
+
             {/* (C)(D) Inputs + primary action */}
-            <form onSubmit={enter} className="mt-6 space-y-3">
+            <form onSubmit={enter} className="space-y-3">
               <div>
                 <label htmlFor="gate-email" className="label">Email</label>
                 <input

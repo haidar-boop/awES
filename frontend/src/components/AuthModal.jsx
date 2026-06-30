@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../lib/auth.jsx";
 import { useAnalysis } from "../lib/store.jsx";
 import { analyze } from "../lib/api.js";
+import SocialAuthButtons from "./SocialAuthButtons.jsx";
 
 const PRO_FEATURES = [
   ["Deflated Sharpe Ratio", "The data-mining test — adjusts for how many variations you tried."],
@@ -162,7 +163,13 @@ export default function AuthModal() {
 
           {stage === "auth" && (
             <>
-              <div className="mb-3 inline-flex rounded-lg border border-slate-300 p-0.5 text-sm dark:border-slate-700">
+              <SocialAuthButtons onError={(text) => setMsg(text ? { type: "error", text } : null)} />
+              <div className="my-4 flex items-center gap-3">
+                <span className="h-px flex-1 bg-slate-200 dark:bg-ink-edge" />
+                <span className="mono-label">or continue with email</span>
+                <span className="h-px flex-1 bg-slate-200 dark:bg-ink-edge" />
+              </div>
+              <div className="mb-3 inline-flex rounded-lg border border-slate-300 p-0.5 text-sm dark:border-ink-edge">
                 {["signup", "signin"].map((m) => (
                   <button
                     key={m}
