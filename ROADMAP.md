@@ -39,9 +39,13 @@ ErgodicLabs, and the academic robustness literature (PSR / DSR / PBO).
       winner highlighting and an equity overlay. New `/compare` page that
       composes the existing `/api/analyze` twice (no backend change). Free.
 
+- [x] **#7 Save / strategy history** — per-user saved reports on Supabase
+      Postgres with Row-Level Security (you must be signed in; RLS guarantees
+      you only ever see your own). Save button on Results, gated `/history`
+      page. One-time table setup: `supabase/saved_analyses.sql`. Frontend-only
+      (Supabase client + RLS, no backend change).
+
 ## Next (build order)
-- [ ] **#7 Save / strategy history** — Supabase Postgres (not Render's
-      ephemeral disk).
 - [ ] **#8 Drawdown recovery** — recovery-time + underwater framing.
 - [ ] **#9 Monte Carlo skip-trades variant** — stress missed-trade sensitivity.
 - [ ] **#10 Walk-forward analysis** — rolling in/out windows (full version of

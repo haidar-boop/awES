@@ -76,6 +76,11 @@ export default function Layout({ children }) {
                 Sign in
               </button>
             )}
+            {isAuthed && loc.pathname !== "/history" && (
+              <Link to="/history" className="btn-ghost hidden sm:inline-flex">
+                History
+              </Link>
+            )}
             {loc.pathname !== "/compare" && (
               <Link to="/compare" className="btn-ghost hidden sm:inline-flex">
                 Compare

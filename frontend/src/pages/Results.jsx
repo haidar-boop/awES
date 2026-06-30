@@ -10,6 +10,7 @@ import KellyCard from "../components/KellyCard.jsx";
 import ReturnsHeatmap from "../components/ReturnsHeatmap.jsx";
 import MetricRow from "../components/MetricRow.jsx";
 import ShareCard from "../components/ShareCard.jsx";
+import SaveButton from "../components/SaveButton.jsx";
 import LockedCard from "../components/LockedCard.jsx";
 import EquityChart from "../components/charts/EquityChart.jsx";
 import DrawdownChart from "../components/charts/DrawdownChart.jsx";
@@ -135,6 +136,7 @@ export default function Results() {
           <button className="btn-ghost" onClick={() => nav("/analyze")}>
             New analysis
           </button>
+          <SaveButton analysis={analysis} />
           <ShareCard analysis={analysis} />
           <button className="btn-primary" onClick={onDownload} disabled={downloading}>
             {downloading ? "Generating…" : pdfLocked ? "Unlock PDF report" : "Download PDF"}
