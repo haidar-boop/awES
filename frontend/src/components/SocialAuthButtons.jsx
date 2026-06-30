@@ -11,13 +11,6 @@ function GoogleIcon() {
     </svg>
   );
 }
-function AppleIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path d="M11.18 8.49c-.02-1.6 1.3-2.37 1.36-2.41-.74-1.08-1.9-1.23-2.31-1.25-.98-.1-1.92.58-2.42.58-.5 0-1.27-.57-2.09-.55-1.07.02-2.06.63-2.61 1.59-1.11 1.93-.28 4.78.8 6.34.53.76 1.16 1.62 1.98 1.59.8-.03 1.1-.51 2.06-.51.96 0 1.23.51 2.07.5.86-.02 1.4-.78 1.92-1.55.6-.88.85-1.74.86-1.78-.02-.01-1.65-.63-1.68-2.5zM9.6 3.84c.44-.53.74-1.27.66-2.01-.64.03-1.41.43-1.86.96-.41.47-.77 1.22-.67 1.94.71.06 1.43-.36 1.87-.89z" />
-    </svg>
-  );
-}
 function GitHubIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -28,7 +21,6 @@ function GitHubIcon() {
 
 const PROVIDERS = [
   ["google", "Google", GoogleIcon],
-  ["apple", "Apple", AppleIcon],
   ["github", "GitHub", GitHubIcon],
 ];
 
