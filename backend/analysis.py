@@ -20,6 +20,7 @@ from engine import montecarlo as emc
 from engine import benchmark as ebench
 from engine import verdict as everdict
 from engine import dependency as edependency
+from engine import ruin as eruin
 
 # Annualization factors by reported frequency.
 FREQ_MAP = {
@@ -32,7 +33,8 @@ FREQ_MAP = {
 
 # Features available only on the paid tier. Free tier still gets a real,
 # useful verdict from the basics.
-PAID_FEATURES = ["deflated_sharpe", "pbo", "monte_carlo", "pdf_report", "haircut"]
+PAID_FEATURES = ["deflated_sharpe", "pbo", "monte_carlo", "risk_of_ruin",
+                 "pdf_report", "haircut"]
 
 
 def periods_per_year(frequency: str) -> float:
@@ -286,6 +288,13 @@ def run_analysis(
     dep_unit = "trades" if (parse_meta or {}).get("data_kind") == "trades" else "periods"
     trade_dependency = edependency.trade_dependency(returns, unit=dep_unit)
 
+    # Risk of ruin, read off the Monte Carlo paths (Pro -- derived from the
+    # paid simulation). None on the free tier; the UI shows a locked teaser.
+    risk_of_ruin = (
+        eruin.risk_of_ruin(mc["max_drawdown_samples"], mc["final_return_samples"])
+        if mc else None
+    )
+
     # --- chart data --------------------------------------------------------
     strat_curve = estats.equity_curve(returns)
     dd = estats.drawdown_series(returns)
@@ -343,6 +352,7 @@ def run_analysis(
         "monte_carlo": mc,
         "benchmark": bench,
         "trade_dependency": trade_dependency,
+        "risk_of_ruin": risk_of_ruin,
         "charts": charts,
         "explanations": explanations,
         "gating": {

@@ -22,9 +22,11 @@ ErgodicLabs, and the academic robustness literature (PSR / DSR / PBO).
       survive?" + outlier-concentration flag. `engine/dependency.py`, free,
       surfaced as a card on Results.
 
+- [x] **#3 Risk of Ruin** — probability of hitting -X% / ruin thresholds, read
+      off the Monte Carlo paths, + worst-case (5th-pct) drawdown and chance of a
+      losing run. `engine/ruin.py`, Pro (derived from the paid simulation).
+
 ## Next (build order)
-- [ ] **#3 Risk of Ruin** — probability of hitting -X% / ruin thresholds, from
-      the existing Monte Carlo. Surface worst-case (5th-pct) max drawdown.
 - [ ] **#4 Monthly / calendar returns heatmap** — P&L by period.
 - [ ] **#5 Position sizing / Kelly** — Full → ½ → ¼ → 1/10 Kelly readout.
 - [ ] **#6 Compare two strategies** — side-by-side verdicts + metrics.

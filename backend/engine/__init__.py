@@ -23,6 +23,7 @@ from . import (
     benchmark,
     verdict,
     dependency,
+    ruin,
 )
 
 __all__ = [
@@ -34,4 +35,5 @@ __all__ = [
     "benchmark",
     "verdict",
     "dependency",
+    "ruin",
 ]
