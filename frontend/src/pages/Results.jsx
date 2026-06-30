@@ -10,6 +10,7 @@ import KellyCard from "../components/KellyCard.jsx";
 import SkipTradesCard from "../components/SkipTradesCard.jsx";
 import ReturnsHeatmap from "../components/ReturnsHeatmap.jsx";
 import DrawdownRecoveryCard from "../components/DrawdownRecoveryCard.jsx";
+import WalkForwardCard from "../components/WalkForwardCard.jsx";
 import MetricRow from "../components/MetricRow.jsx";
 import ShareCard from "../components/ShareCard.jsx";
 import SaveButton from "../components/SaveButton.jsx";
@@ -82,6 +83,7 @@ export default function Results() {
   const positionSizing = analysis.position_sizing;
   const drawdownRecovery = analysis.drawdown_recovery;
   const skipTrades = analysis.skip_trades;
+  const walkForward = analysis.walk_forward;
   const locked = new Set(analysis.gating?.locked || []);
   const isFree = locked.size > 0;
   const dsrLocked = locked.has("deflated_sharpe");
@@ -287,6 +289,9 @@ export default function Results() {
 
       {/* Drawdown recovery (free) */}
       {drawdownRecovery?.available && <DrawdownRecoveryCard data={drawdownRecovery} />}
+
+      {/* Walk-forward consistency (free) */}
+      {walkForward?.available && <WalkForwardCard data={walkForward} />}
 
       {/* Returns-over-time heatmap (free) */}
       {returnsOverTime?.available && <ReturnsHeatmap data={returnsOverTime} />}

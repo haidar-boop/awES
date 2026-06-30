@@ -28,6 +28,7 @@ from . import (
     kelly,
     drawdowns,
     skiptrades,
+    walkforward,
 )
 
 __all__ = [
@@ -44,4 +45,5 @@ __all__ = [
     "kelly",
     "drawdowns",
     "skiptrades",
+    "walkforward",
 ]

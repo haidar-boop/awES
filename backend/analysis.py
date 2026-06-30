@@ -25,6 +25,7 @@ from engine import heatmap as eheatmap
 from engine import kelly as ekelly
 from engine import drawdowns as edrawdowns
 from engine import skiptrades as eskiptrades
+from engine import walkforward as ewalkforward
 
 # Annualization factors by reported frequency.
 FREQ_MAP = {
@@ -311,6 +312,9 @@ def run_analysis(
     # Missed-trade robustness (Pro -- a resampling stress test like the MC cone).
     skip_trades = eskiptrades.skip_trades_robustness(returns, unit=dep_unit) if paid else None
 
+    # Walk-forward consistency (free -- the multi-window OOS check).
+    walk_forward = ewalkforward.walk_forward(returns, ppy)
+
     # --- chart data --------------------------------------------------------
     strat_curve = estats.equity_curve(returns)
     dd = estats.drawdown_series(returns)
@@ -373,6 +377,7 @@ def run_analysis(
         "position_sizing": position_sizing,
         "drawdown_recovery": drawdown_recovery,
         "skip_trades": skip_trades,
+        "walk_forward": walk_forward,
         "charts": charts,
         "explanations": explanations,
         "gating": {

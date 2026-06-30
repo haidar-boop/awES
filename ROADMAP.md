@@ -53,9 +53,13 @@ ErgodicLabs, and the academic robustness literature (PSR / DSR / PBO).
       of trades over 1,000 sims and reports how often the edge stays profitable.
       The stochastic cousin of #2. `engine/skiptrades.py`, Pro.
 
+- [x] **#10 Walk-forward consistency** — splits the track record into N
+      consecutive windows and reports each window's Sharpe + whether the edge
+      decayed early→late, with a per-window bar viz. `engine/walkforward.py`,
+      free. (Honest: returns-only data has no parameters to re-optimise, so
+      this is rolling out-of-sample consistency, not parameter walk-forward.)
+
 ## Next (build order)
-- [ ] **#10 Walk-forward analysis** — rolling in/out windows (full version of
-      the current OOS degradation check).
 - [ ] **#11 Portfolio combination + correlation matrix** — multi-strategy.
 - [ ] **#12 Vs. Random test** — compare to the best strategy luck produces.
 - [ ] **#13 Noise / perturbation test** — needs price series.
