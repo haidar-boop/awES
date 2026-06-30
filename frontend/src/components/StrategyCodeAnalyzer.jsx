@@ -30,8 +30,14 @@ function Finding({ f }) {
           <span className={`h-2 w-2 rounded-full ${m.dot}`} />
           {f.category}
         </span>
-        <span className={`text-xs font-medium ${m.text}`}>
-          {SEV_LABEL[f.severity] || "Info"} {open ? "▲" : "▼"}
+        <span className={`flex items-center gap-1.5 font-mono text-[11px] font-semibold uppercase tracking-label ${m.text}`}>
+          {SEV_LABEL[f.severity] || "Info"}
+          <svg
+            width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"
+            className={`transition-transform ${open ? "rotate-180" : ""}`}
+          >
+            <path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </span>
       </button>
       {open && (
@@ -98,21 +104,26 @@ export default function StrategyCodeAnalyzer() {
   return (
     <div className="card p-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold">
-          🤖 AI strategy code review{" "}
-          <span className="align-middle text-xs font-semibold text-brand">PRO</span>
+        <h2 className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-slate-900 dark:text-txt">
+          AI strategy code review
+          <span className="rounded-sm border border-data/30 bg-data/10 px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-label text-data">
+            Pro
+          </span>
         </h2>
       </div>
-      <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+      <p className="mt-1 text-sm text-slate-600 dark:text-txt-muted">
         Paste your strategy’s code or rules and an AI reads it for structural flaws
         the numbers can’t catch — lookahead bias, curve-fitting, unrealistic fills.
       </p>
 
       {/* Free users: locked, NO AI call is ever made */}
       {!isPro ? (
-        <div className="mt-4 grid place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 p-8 text-center dark:border-slate-700 dark:bg-slate-800/50">
-          <div className="text-3xl">🔒</div>
-          <p className="mt-2 text-sm font-medium">Pro feature</p>
+        <div className="mt-4 grid place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 p-8 text-center dark:border-ink-edge dark:bg-ink-deep/60">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="4.5" y="10.5" width="15" height="9.5" rx="1.6" stroke="#8B97A6" strokeWidth="1.7" />
+            <path d="M8 10.5V7.5a4 4 0 018 0v3" stroke="#8B97A6" strokeWidth="1.7" strokeLinecap="round" />
+          </svg>
+          <p className="mono-label mt-2">Pro feature</p>
           <button className="btn-primary mt-3" onClick={openUnlock}>
             Unlock full report
           </button>

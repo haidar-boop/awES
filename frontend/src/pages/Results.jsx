@@ -16,19 +16,31 @@ import { pct, num, int } from "../lib/format.js";
 
 const SIMPLE_KEYS = ["psr", "dsr", "oos", "benchmark", "montecarlo"];
 
+function ProLock({ onUnlock, className = "" }) {
+  return (
+    <button
+      onClick={onUnlock}
+      className={`inline-flex items-center gap-1.5 font-mono font-semibold uppercase tracking-label text-data hover:underline ${className}`}
+    >
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="4.5" y="10.5" width="15" height="9.5" rx="1.6" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M8 10.5V7.5a4 4 0 018 0v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+      Pro
+    </button>
+  );
+}
+
 function StatTile({ label, value, locked, onUnlock }) {
   return (
-    <div className="rounded-lg bg-slate-100 px-4 py-3 dark:bg-slate-800">
-      <div className="text-xs uppercase tracking-wide text-slate-500">{label}</div>
+    <div className="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 dark:border-ink-edge dark:bg-ink-elevated">
+      <div className="mono-label">{label}</div>
       {locked ? (
-        <button
-          onClick={onUnlock}
-          className="mt-1 font-mono text-lg font-semibold text-brand hover:underline"
-        >
-          🔒 Pro
-        </button>
+        <ProLock onUnlock={onUnlock} className="mt-1.5 text-base" />
       ) : (
-        <div className="mt-1 font-mono text-lg font-semibold">{value}</div>
+        <div className="mt-1 font-mono text-lg font-semibold tabular-nums text-slate-900 dark:text-txt">
+          {value}
+        </div>
       )}
     </div>
   );
@@ -87,22 +99,24 @@ export default function Results() {
       {/* Top bar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Reality Check Report</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-slate-900 dark:text-txt">
+            Reality Check Report
+          </h1>
+          <p className="mt-0.5 font-mono text-xs tabular-nums text-slate-500 dark:text-txt-muted">
             {int(meta.n_observations)} observations · {meta.frequency} ·{" "}
             {int(meta.num_trials)} trial(s) tested
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="inline-flex rounded-lg border border-slate-300 p-0.5 text-sm dark:border-slate-700">
+          <div className="inline-flex rounded-md border border-slate-300 p-0.5 font-mono text-xs uppercase tracking-label dark:border-ink-edge">
             <button
-              className={`rounded-md px-3 py-1.5 font-medium ${!detailed ? "bg-brand text-white" : "text-slate-600 dark:text-slate-300"}`}
+              className={`rounded-sm px-3 py-1.5 font-semibold transition ${!detailed ? "bg-data text-ink-base" : "text-slate-600 dark:text-txt-muted"}`}
               onClick={() => setDetailed(false)}
             >
               Simple
             </button>
             <button
-              className={`rounded-md px-3 py-1.5 font-medium ${detailed ? "bg-brand text-white" : "text-slate-600 dark:text-slate-300"}`}
+              className={`rounded-sm px-3 py-1.5 font-semibold transition ${detailed ? "bg-data text-ink-base" : "text-slate-600 dark:text-txt-muted"}`}
               onClick={() => setDetailed(true)}
             >
               Detailed
@@ -113,7 +127,7 @@ export default function Results() {
           </button>
           <ShareCard analysis={analysis} />
           <button className="btn-primary" onClick={onDownload} disabled={downloading}>
-            {downloading ? "Generating…" : pdfLocked ? "🔒 PDF report" : "Download PDF"}
+            {downloading ? "Generating…" : pdfLocked ? "Unlock PDF report" : "Download PDF"}
           </button>
         </div>
       </div>
@@ -163,12 +177,12 @@ export default function Results() {
       {/* Metrics */}
       <div className="card p-5">
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-lg font-bold">
+          <h2 className="font-display text-lg font-bold tracking-tight text-slate-900 dark:text-txt">
             {detailed ? "All metrics" : "The metrics that matter"}
           </h2>
           {!detailed && (
             <button
-              className="text-sm font-semibold text-brand hover:underline"
+              className="font-mono text-xs font-semibold uppercase tracking-label text-data hover:underline"
               onClick={() => setDetailed(true)}
             >
               Show everything →
@@ -183,9 +197,13 @@ export default function Results() {
         {isFree && (
           <button
             onClick={openUnlock}
-            className="mt-3 w-full rounded-lg border border-dashed border-brand/40 py-2 text-sm font-semibold text-brand hover:bg-brand/5"
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-data/40 py-2.5 font-mono text-xs font-semibold uppercase tracking-label text-data hover:bg-data/5"
           >
-            🔒 Deflated Sharpe, PBO & more — unlock Pro
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="4.5" y="10.5" width="15" height="9.5" rx="1.6" stroke="currentColor" strokeWidth="1.8" />
+              <path d="M8 10.5V7.5a4 4 0 018 0v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+            Deflated Sharpe, PBO &amp; more — unlock Pro
           </button>
         )}
       </div>
@@ -294,16 +312,11 @@ export default function Results() {
 function Detail({ k, v, locked, onUnlock }) {
   return (
     <>
-      <span className="text-slate-500">{k}</span>
+      <span className="text-slate-500 dark:text-txt-muted">{k}</span>
       {locked ? (
-        <button
-          onClick={onUnlock}
-          className="text-right font-mono font-medium text-brand hover:underline"
-        >
-          🔒 Pro
-        </button>
+        <ProLock onUnlock={onUnlock} className="justify-self-end text-xs" />
       ) : (
-        <span className="text-right font-mono font-medium">{v}</span>
+        <span className="text-right font-mono font-medium tabular-nums text-slate-900 dark:text-txt">{v}</span>
       )}
     </>
   );

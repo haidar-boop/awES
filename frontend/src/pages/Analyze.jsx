@@ -86,16 +86,20 @@ export default function Analyze() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="text-3xl font-bold">Analyze a strategy</h1>
-      <p className="mt-1 text-slate-600 dark:text-slate-300">
+      <h1 className="font-display text-3xl font-bold tracking-tight text-slate-900 dark:text-txt">
+        Analyze a strategy
+      </h1>
+      <p className="mt-1 text-slate-600 dark:text-txt-muted">
         Paste a single column of returns or an equity curve (CSV or one value per
         line). We’ll detect the format and run every robustness check.
       </p>
 
       {loading && (
         <div className="mt-6 card flex items-center gap-3 p-6">
-          <span className="h-5 w-5 animate-spin rounded-full border-2 border-brand border-t-transparent" />
-          <span className="font-medium">Running robustness checks…</span>
+          <span className="h-5 w-5 animate-spin rounded-full border-2 border-data border-t-transparent" />
+          <span className="font-mono text-sm uppercase tracking-label text-txt-muted">
+            Running robustness checks…
+          </span>
         </div>
       )}
 
@@ -137,7 +141,7 @@ export default function Analyze() {
               </label>
               <details className="text-xs text-slate-500">
                 <summary className="cursor-pointer">Expected format</summary>
-                <pre className="mt-2 rounded-lg bg-slate-100 p-3 dark:bg-slate-800">
+                <pre className="mt-2 rounded-md border border-slate-200 bg-slate-50 p-3 dark:border-ink-edge dark:bg-ink-deep">
 {EXAMPLE_CSV}
                 </pre>
                 <p className="mt-1">

@@ -127,21 +127,27 @@ export default function AuthModal() {
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" onClick={close}>
       <div className="card w-full max-w-lg p-6" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between">
-          <h2 className="text-xl font-bold">Unlock the full report</h2>
-          <button onClick={close} className="text-slate-400 hover:text-slate-200">✕</button>
+          <h2 className="font-display text-xl font-bold tracking-tight text-slate-900 dark:text-txt">
+            Unlock the full report
+          </h2>
+          <button onClick={close} className="text-slate-400 hover:text-slate-200" aria-label="Close">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+          </button>
         </div>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        <p className="mt-1 text-sm text-slate-500 dark:text-txt-muted">
           The verdict and core stats are free. Pro adds the advanced robustness
           suite and the shareable PDF.
         </p>
 
         <ul className="mt-4 space-y-2">
           {PRO_FEATURES.map(([t, d]) => (
-            <li key={t} className="flex gap-2 text-sm">
-              <span className="text-brand">★</span>
+            <li key={t} className="flex gap-2.5 text-sm">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-data" aria-hidden="true" />
               <span>
-                <span className="font-semibold">{t}</span> —{" "}
-                <span className="text-slate-500 dark:text-slate-400">{d}</span>
+                <span className="font-semibold text-slate-900 dark:text-txt">{t}</span> —{" "}
+                <span className="text-slate-500 dark:text-txt-muted">{d}</span>
               </span>
             </li>
           ))}
@@ -160,7 +166,7 @@ export default function AuthModal() {
                 {["signup", "signin"].map((m) => (
                   <button
                     key={m}
-                    className={`rounded-md px-3 py-1.5 font-medium ${mode === m ? "bg-brand text-white" : "text-slate-600 dark:text-slate-300"}`}
+                    className={`rounded-sm px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-label ${mode === m ? "bg-data text-ink-base" : "text-slate-600 dark:text-txt-muted"}`}
                     onClick={() => { setMode(m); setMsg(null); }}
                   >
                     {m === "signup" ? "Create account" : "Log in"}
@@ -236,8 +242,11 @@ export default function AuthModal() {
           )}
 
           {stage === "pro" && (
-            <div className="rounded-lg border border-green-600/40 bg-green-50 px-4 py-3 text-sm text-green-700 dark:bg-green-950/40 dark:text-green-300">
-              ✓ You’re Pro! Loading your full report…
+            <div className="flex items-center gap-2 rounded-md border border-robust/40 bg-robust/10 px-4 py-3 text-sm font-medium text-robust">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M2.5 7.5l3 3 6-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              You’re Pro — loading your full report…
             </div>
           )}
 
