@@ -3,30 +3,54 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light dark;
+  color-scheme: dark;
 }
 
-html,
-body,
-#root {
-  height: 100%;
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  /* Dark graphite is the single brand identity. */
+  html {
+    background-color: #0d1117;
+  }
+
+  body {
+    @apply bg-ink-base font-sans text-txt antialiased;
+    /* Ambient instrument light: a data-blue and a faint robust orb over graphite. */
+    background-image:
+      radial-gradient(46rem 40rem at 82% -8%, rgba(88, 166, 255, 0.1), transparent 60%),
+      radial-gradient(40rem 36rem at 6% 6%, rgba(63, 182, 139, 0.06), transparent 62%),
+      linear-gradient(180deg, #10141a 0%, #0d1117 34%);
+    background-attachment: fixed;
+  }
+
+  /* Fixed film-grain — sits above the background, below content. */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Content sits above the grain. Modals portal to <body> at z-50, above it. */
+  #root {
+    position: relative;
+    z-index: 2;
+  }
+
+  ::selection {
+    background: rgba(88, 166, 255, 0.25);
+  }
 }
 
-body {
-  @apply bg-slate-50 text-slate-900 antialiased;
-  font-feature-settings: "cv05" 1, "ss01" 1;
-}
-
-/* Instrument graphite shell (dark = primary identity) */
-.dark body {
-  @apply bg-ink-base text-txt antialiased;
-  background-image:
-    radial-gradient(60rem 60rem at 78% -10%, #58a6ff0a, transparent 60%),
-    linear-gradient(180deg, #10141a 0%, #0d1117 32%);
-  background-attachment: fixed;
-}
-
-/* Tabular figures everywhere numbers live */
+/* Tabular figures everywhere numbers live — the instrument voice. */
 .font-mono,
 .tnum,
 code,
@@ -37,62 +61,99 @@ pre {
 }
 
 @layer components {
+  /* ---- Machined hardware: double-bezel ---------------------------------- */
+  /* Single-element plate (glass core look) — the workhorse card. */
   .card {
-    @apply rounded-xl border border-slate-200 bg-white shadow-sm
-      dark:border-ink-edge dark:bg-ink-panel dark:shadow-none;
+    @apply rounded-core bg-ink-panel ring-1 ring-ink-edge;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 24px 60px -20px rgba(3, 7, 14, 0.7);
   }
-  /* Elevated instrument surface */
-  .panel {
-    @apply rounded-lg border border-slate-200 bg-white
-      dark:border-ink-edge dark:bg-ink-elevated;
+  /* True double-bezel: outer aluminium shell ... */
+  .bezel {
+    @apply rounded-bezel bg-white/[0.02] p-1.5 ring-1 ring-ink-edge;
+    box-shadow: 0 40px 90px -28px rgba(3, 7, 14, 0.8);
   }
+  /* ... seated glass core inside it (concentric radius). */
+  .bezel-core {
+    @apply rounded-core bg-ink-panel;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  /* ---- Island buttons --------------------------------------------------- */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2
-      text-sm font-semibold tracking-tight transition focus:outline-none
-      focus-visible:ring-2 focus-visible:ring-data/60 disabled:cursor-not-allowed
-      disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-full text-sm
+      font-medium tracking-tight transition-all duration-500 ease-spatial
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-data/60
+      active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-primary {
-    @apply btn bg-data text-ink-base hover:bg-brand-dark
-      dark:text-ink-base;
+    @apply btn bg-data px-6 py-3 text-ink-base;
+    box-shadow:
+      0 0 0 1px rgba(88, 166, 255, 0.25),
+      0 14px 44px -14px rgba(88, 166, 255, 0.5);
+  }
+  .btn-primary:hover {
+    box-shadow:
+      0 0 0 1px rgba(88, 166, 255, 0.4),
+      0 18px 52px -12px rgba(88, 166, 255, 0.6);
   }
   .btn-ghost {
-    @apply btn border border-slate-300 bg-transparent text-slate-700
-      hover:bg-slate-100 dark:border-ink-edge dark:bg-ink-elevated/40
-      dark:text-txt dark:hover:bg-ink-elevated dark:hover:border-txt-faint;
+    @apply btn border border-ink-edge bg-ink-elevated/50 px-5 py-3 text-txt
+      hover:border-txt-faint hover:bg-ink-elevated;
   }
+  /* Nested trailing-icon circle (button-in-button). */
+  .btn-nib {
+    @apply grid h-7 w-7 place-items-center rounded-full transition-transform
+      duration-500 ease-spatial;
+  }
+  .btn-primary .btn-nib {
+    @apply bg-ink-base/15;
+  }
+  .group:hover .btn-nib,
+  .btn:hover .btn-nib {
+    transform: translate(2px, -1px);
+  }
+
+  /* ---- Recessed input wells --------------------------------------------- */
   .input {
-    @apply w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm
-      text-slate-900 transition focus:border-data focus:outline-none
-      focus:ring-1 focus:ring-data dark:border-ink-edge dark:bg-ink-deep
-      dark:text-txt dark:placeholder:text-txt-faint;
+    @apply w-full rounded-xl bg-ink-deep px-3.5 py-2.5 text-sm text-txt ring-1
+      ring-ink-edge transition placeholder:text-txt-faint focus:outline-none
+      focus:ring-2 focus:ring-data/60;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.03),
+      inset 0 2px 8px rgba(3, 7, 14, 0.55);
   }
   .label {
-    @apply mb-1 block text-[11px] font-semibold uppercase tracking-label
-      text-slate-500 dark:text-txt-muted;
+    @apply mb-1 block font-mono text-[11px] font-medium uppercase tracking-eyebrow
+      text-txt-muted;
   }
-  /* Instrumentation label — monospace, spaced, quiet */
+  /* Instrument micro-label — monospace, spaced, quiet. */
   .mono-label {
-    @apply font-mono text-[11px] font-medium uppercase tracking-label
-      text-slate-500 dark:text-txt-muted;
+    @apply font-mono text-[11px] font-medium uppercase tracking-eyebrow text-txt-muted;
   }
-  /* Thin separating rule */
+  /* Eyebrow pill preceding major headings. */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full bg-ink-elevated px-3 py-1
+      font-mono text-[11px] font-medium uppercase tracking-eyebrow text-txt-faint
+      ring-1 ring-ink-edge;
+  }
   .hairline {
-    @apply border-slate-200 dark:border-ink-edge;
+    @apply border-ink-edge;
   }
 }
 
-/* Recharts readability on graphite */
+/* Recharts readability on graphite. */
 .recharts-default-tooltip {
-  @apply !rounded-md !border !border-ink-edge !bg-ink-elevated !text-txt;
-  font-family: "IBM Plex Mono", ui-monospace, monospace !important;
+  @apply !rounded-xl !border !border-ink-edge !bg-ink-elevated !text-txt;
+  font-family: "Geist Mono Variable", ui-monospace, monospace !important;
   font-size: 12px !important;
 }
 .recharts-cartesian-axis-tick-value {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: "Geist Mono Variable", ui-monospace, monospace;
 }
 
-/* Honour reduced-motion fully */
+/* Honour reduced-motion fully. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

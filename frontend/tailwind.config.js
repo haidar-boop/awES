@@ -34,12 +34,30 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["IBM Plex Sans", "Inter", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["IBM Plex Sans", "Inter", "ui-sans-serif", "sans-serif"],
-        mono: ["IBM Plex Mono", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+        sans: ["Geist Variable", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["Bricolage Grotesque Variable", "Geist Variable", "ui-sans-serif", "sans-serif"],
+        mono: ["Geist Mono Variable", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       letterSpacing: {
         label: "0.12em",
+        eyebrow: "0.22em",
+        tightest: "-0.03em",
+      },
+      borderRadius: {
+        bezel: "1.75rem",
+        core: "1.375rem", // bezel - 0.375rem (concentric inner core)
+      },
+      boxShadow: {
+        // Cool graphite drop — never pure black.
+        plate: "0 24px 60px -20px rgba(3,7,14,0.7)",
+        "plate-lg": "0 40px 90px -28px rgba(3,7,14,0.8)",
+        // Inner top highlight — glass core catching light.
+        core: "inset 0 1px 0 rgba(255,255,255,0.05)",
+        // data-tinted glow — primary CTA + live gauge only.
+        glow: "0 0 0 1px rgba(88,166,255,0.25), 0 14px 44px -14px rgba(88,166,255,0.5)",
+      },
+      transitionTimingFunction: {
+        spatial: "cubic-bezier(0.32,0.72,0,1)",
       },
       keyframes: {
         // Inflated value deflating to its true value (Truth Collapse)
@@ -66,11 +84,17 @@ export default {
           "0%": { transform: "translateX(-100%)" },
           "100%": { transform: "translateX(100%)" },
         },
+        // Scroll-entry: heavy fade-up + de-blur (transform/opacity only).
+        reveal: {
+          "0%": { opacity: "0", transform: "translateY(18px)", filter: "blur(6px)" },
+          "100%": { opacity: "1", transform: "none", filter: "none" },
+        },
       },
       animation: {
         unlock: "unlock 620ms cubic-bezier(0.2, 0.7, 0.2, 1) both",
         settle: "settle 380ms cubic-bezier(0.2, 0.7, 0.2, 1) both",
         scan: "scan 1.4s linear infinite",
+        reveal: "reveal 780ms cubic-bezier(0.32,0.72,0,1) both",
       },
     },
   },
