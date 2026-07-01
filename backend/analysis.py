@@ -26,6 +26,7 @@ from engine import kelly as ekelly
 from engine import drawdowns as edrawdowns
 from engine import skiptrades as eskiptrades
 from engine import walkforward as ewalkforward
+from engine import vsrandom as evsrandom
 
 # Annualization factors by reported frequency.
 FREQ_MAP = {
@@ -39,7 +40,8 @@ FREQ_MAP = {
 # Features available only on the paid tier. Free tier still gets a real,
 # useful verdict from the basics.
 PAID_FEATURES = ["deflated_sharpe", "pbo", "monte_carlo", "risk_of_ruin",
-                 "position_sizing", "skip_trades", "pdf_report", "haircut"]
+                 "position_sizing", "skip_trades", "vs_random", "pdf_report",
+                 "haircut"]
 
 
 def periods_per_year(frequency: str) -> float:
@@ -315,6 +317,9 @@ def run_analysis(
     # Walk-forward consistency (free -- the multi-window OOS check).
     walk_forward = ewalkforward.walk_forward(returns, ppy)
 
+    # Vs. Random test (Pro -- race the strategy against a field of random ones).
+    vs_random = evsrandom.vs_random(returns, ppy) if paid else None
+
     # --- chart data --------------------------------------------------------
     strat_curve = estats.equity_curve(returns)
     dd = estats.drawdown_series(returns)
@@ -378,6 +383,7 @@ def run_analysis(
         "drawdown_recovery": drawdown_recovery,
         "skip_trades": skip_trades,
         "walk_forward": walk_forward,
+        "vs_random": vs_random,
         "charts": charts,
         "explanations": explanations,
         "gating": {

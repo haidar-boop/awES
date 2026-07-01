@@ -9,6 +9,7 @@ import TradeDependencyCard from "../components/TradeDependencyCard.jsx";
 import RiskOfRuinCard from "../components/RiskOfRuinCard.jsx";
 import KellyCard from "../components/KellyCard.jsx";
 import SkipTradesCard from "../components/SkipTradesCard.jsx";
+import VsRandomCard from "../components/VsRandomCard.jsx";
 import ReturnsHeatmap from "../components/ReturnsHeatmap.jsx";
 import DrawdownRecoveryCard from "../components/DrawdownRecoveryCard.jsx";
 import WalkForwardCard from "../components/WalkForwardCard.jsx";
@@ -96,6 +97,7 @@ export default function Results() {
   const positionSizing = analysis.position_sizing;
   const drawdownRecovery = analysis.drawdown_recovery;
   const skipTrades = analysis.skip_trades;
+  const vsRandom = analysis.vs_random;
   const walkForward = analysis.walk_forward;
   const locked = new Set(analysis.gating?.locked || []);
   const isFree = locked.size > 0;
@@ -104,6 +106,7 @@ export default function Results() {
   const rorLocked = locked.has("risk_of_ruin");
   const sizingLocked = locked.has("position_sizing");
   const skipLocked = locked.has("skip_trades");
+  const vsRandomLocked = locked.has("vs_random");
   const pdfLocked = locked.has("pdf_report");
 
   const rows = explanations || [];
@@ -238,6 +241,17 @@ export default function Results() {
         <LockedCard
           title="Missed-trade robustness"
           subtitle="How often the edge survives when a random fraction of trades go missing"
+          onUnlock={openUnlock}
+        />
+      ) : null}
+
+      {/* Vs. Random (Pro) */}
+      {vsRandom?.available ? (
+        <VsRandomCard data={vsRandom} />
+      ) : vsRandomLocked ? (
+        <LockedCard
+          title="Vs. random — could this be luck?"
+          subtitle="Race the strategy against a field of zero-edge random strategies"
           onUnlock={openUnlock}
         />
       ) : null}

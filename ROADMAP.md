@@ -70,8 +70,12 @@ ErgodicLabs, and the academic robustness literature (PSR / DSR / PBO).
       and run the full suite on the combined stream. `engine/portfolio.py` +
       Pro-gated `/api/portfolio`; new `/portfolio` page (Pro-gated).
 
-## Next (build order) — all remaining features are Pro
-- [ ] **#12 Vs. Random test** — compare to the best strategy luck produces.
+- [x] **#12 Vs. Random test** — races the strategy against 1,000 zero-edge
+      random strategies (matched volatility) and reports how often chance
+      matches its Sharpe + what the luckiest random one hit. `engine/vsrandom.py`,
+      Pro. The simulation cousin of the PSR.
+
+## Next (build order) — all remaining features are Pro — compare to the best strategy luck produces.
 - [ ] **#13 Noise / perturbation test** — needs price series.
 - [ ] **#14 Parameter-permutation stability** — needs parameterized input.
 - [ ] **#15 "Validation Plan"** — turn a result into prioritized, specific next

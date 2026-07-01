@@ -30,6 +30,7 @@ from . import (
     skiptrades,
     walkforward,
     portfolio,
+    vsrandom,
 )
 
 __all__ = [
@@ -48,4 +49,5 @@ __all__ = [
     "skiptrades",
     "walkforward",
     "portfolio",
+    "vsrandom",
 ]
