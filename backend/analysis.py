@@ -27,6 +27,7 @@ from engine import drawdowns as edrawdowns
 from engine import skiptrades as eskiptrades
 from engine import walkforward as ewalkforward
 from engine import vsrandom as evsrandom
+from engine import plan as eplan
 
 # Annualization factors by reported frequency.
 FREQ_MAP = {
@@ -40,8 +41,8 @@ FREQ_MAP = {
 # Features available only on the paid tier. Free tier still gets a real,
 # useful verdict from the basics.
 PAID_FEATURES = ["deflated_sharpe", "pbo", "monte_carlo", "risk_of_ruin",
-                 "position_sizing", "skip_trades", "vs_random", "pdf_report",
-                 "haircut"]
+                 "position_sizing", "skip_trades", "vs_random", "validation_plan",
+                 "pdf_report", "haircut"]
 
 
 def periods_per_year(frequency: str) -> float:
@@ -320,6 +321,14 @@ def run_analysis(
     # Vs. Random test (Pro -- race the strategy against a field of random ones).
     vs_random = evsrandom.vs_random(returns, ppy) if paid else None
 
+    # Validation plan (Pro -- a prioritised action list read off this report).
+    validation_plan = eplan.build_plan(
+        stats=stats, sharpe=sharpe, overfit=overfit, benchmark=bench,
+        trade_dependency=trade_dependency, risk_of_ruin=risk_of_ruin,
+        walk_forward=walk_forward, skip_trades=skip_trades, vs_random=vs_random,
+        num_trials=num_trials, n=n,
+    ) if paid else None
+
     # --- chart data --------------------------------------------------------
     strat_curve = estats.equity_curve(returns)
     dd = estats.drawdown_series(returns)
@@ -384,6 +393,7 @@ def run_analysis(
         "skip_trades": skip_trades,
         "walk_forward": walk_forward,
         "vs_random": vs_random,
+        "validation_plan": validation_plan,
         "charts": charts,
         "explanations": explanations,
         "gating": {

@@ -5,6 +5,7 @@ import { useAuth } from "../lib/auth.jsx";
 import { downloadReport } from "../lib/api.js";
 import VerdictCard from "../components/VerdictCard.jsx";
 import VerdictTeaser from "../components/VerdictTeaser.jsx";
+import ValidationPlanCard from "../components/ValidationPlanCard.jsx";
 import TradeDependencyCard from "../components/TradeDependencyCard.jsx";
 import RiskOfRuinCard from "../components/RiskOfRuinCard.jsx";
 import KellyCard from "../components/KellyCard.jsx";
@@ -91,6 +92,7 @@ export default function Results() {
 
   const { verdict, stats, sharpe, charts, explanations, meta, monte_carlo } =
     analysis;
+  const validationPlan = analysis.validation_plan;
   const tradeDependency = analysis.trade_dependency;
   const riskOfRuin = analysis.risk_of_ruin;
   const returnsOverTime = analysis.returns_over_time;
@@ -169,6 +171,9 @@ export default function Results() {
 
       {/* Verdict */}
       <VerdictCard verdict={verdict} />
+
+      {/* Validation plan (Pro) — the "what do I do about it" companion */}
+      {validationPlan?.available && <ValidationPlanCard data={validationPlan} />}
 
       {/* Unlock banner (free only) */}
       {isFree && (

@@ -31,6 +31,7 @@ from . import (
     walkforward,
     portfolio,
     vsrandom,
+    plan,
 )
 
 __all__ = [
@@ -50,4 +51,5 @@ __all__ = [
     "walkforward",
     "portfolio",
     "vsrandom",
+    "plan",
 ]

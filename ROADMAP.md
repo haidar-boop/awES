@@ -78,8 +78,10 @@ ErgodicLabs, and the academic robustness literature (PSR / DSR / PBO).
 ## Next (build order) — all remaining features are Pro — compare to the best strategy luck produces.
 - [ ] **#13 Noise / perturbation test** — needs price series.
 - [ ] **#14 Parameter-permutation stability** — needs parameterized input.
-- [ ] **#15 "Validation Plan"** — turn a result into prioritized, specific next
-      steps (the honest version of a generated plan; Pro feature).
+- [x] **#15 Validation Plan** — synthesizes the whole report into a prioritized,
+      specific action list (critical → fix → note → strength), every item read
+      off this strategy's own numbers. `engine/plan.py`, Pro. Placed right under
+      the verdict as the flagship "what do I do about it" card.
 
 ## Parked / backlog (revisit later)
 - **Real calendar dates in the heatmap** — #4 groups returns into *sequential*
