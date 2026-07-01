@@ -105,9 +105,10 @@ def build_plan(
             f"{int(risk_of_ruin.get('ruin_level', 0.5) * 100)}%+ drawdown. Position-size "
             f"assuming it happens, not assuming it won't.")
 
+    _bench_name = "cash (a flat 0% return)" if benchmark.get("assumed_flat_benchmark") else "buy-and-hold"
     if not benchmark.get("beats_benchmark"):
-        add("important", "Beat buy-and-hold",
-            "The strategy doesn't clearly beat simply holding the asset. If the "
+        add("important", f"Beat {_bench_name}",
+            f"The strategy doesn't clearly beat {_bench_name}. If the "
             "complexity isn't earning its keep, simplify or reconsider.")
 
     if vs_random and vs_random.get("available") and vs_random.get("status") in ("fail", "warn"):
@@ -127,7 +128,7 @@ def build_plan(
             add("strength", "Holds up out-of-sample",
                 "The Sharpe barely degrades on the held-out half — a good sign.")
         if benchmark.get("beats_benchmark"):
-            add("strength", "Beats buy-and-hold",
+            add("strength", f"Beats {_bench_name}",
                 "On both raw and risk-adjusted return.")
         if vs_random and vs_random.get("status") == "pass":
             add("strength", "Clears the random field",

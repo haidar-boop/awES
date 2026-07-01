@@ -49,6 +49,10 @@ def build_verdict(
     pbo = overfit["pbo"]["pbo"]
     beats_bench = benchmark["beats_benchmark"]
     beats_bench_return = benchmark["beats_benchmark_return"]
+    # When the caller supplies no benchmark we compare against a synthesised flat
+    # line (0%/yr by default) -- that's "cash", not the asset's buy-and-hold. Only
+    # call it "buy-and-hold" when a real benchmark series was actually provided.
+    bench_name = "cash (a flat 0% return)" if benchmark.get("assumed_flat_benchmark") else "buy-and-hold"
 
     # --- sample size -------------------------------------------------------
     if n_observations < min_observations:
@@ -139,12 +143,12 @@ def build_verdict(
     if not beats_bench_return:
         score -= 2
         reasons.append(
-            "Does not beat buy-and-hold on total return -- you'd have done as "
+            f"Does not beat {bench_name} on total return -- you'd have done as "
             "well or better just holding."
         )
     elif beats_bench:
         score += 1
-        reasons.append("Beats buy-and-hold on both return and risk-adjusted return.")
+        reasons.append(f"Beats {bench_name} on both return and risk-adjusted return.")
 
     # --- track record length ----------------------------------------------
     if math.isfinite(mintrl) and mintrl > n_observations:

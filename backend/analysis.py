@@ -203,16 +203,18 @@ def _build_explanations(*, stats, dist, sharpe, overfit, mc, bench, ppy) -> list
             "backtest is overfit.",
         )
 
-    # Benchmark
+    # Benchmark. With no benchmark supplied we compare against a flat 0% (cash)
+    # line, so label it honestly rather than calling cash "buy-and-hold".
+    _bench_name = "cash (0%)" if bench.get("assumed_flat_benchmark") else "buy-and-hold"
     add(
-        "benchmark", "Beats buy-and-hold?",
+        "benchmark", f"Beats {_bench_name}?",
         "Yes" if bench["beats_benchmark"] else "No",
         "pass" if bench["beats_benchmark"] else "fail",
-        ("The strategy beats simply holding on both return and risk-adjusted "
+        (f"The strategy beats {_bench_name} on both return and risk-adjusted "
          "return." if bench["beats_benchmark"] else
-         "The strategy does not clearly beat just holding the asset -- a basic "
+         f"The strategy does not clearly beat {_bench_name} -- a basic "
          "but commonly failed gut-check."),
-        "Compares your strategy to buy-and-hold. If you can't beat holding, the "
+        f"Compares your strategy to {_bench_name}. If you can't beat it, the "
         "complexity isn't earning its keep.",
     )
 
