@@ -86,6 +86,11 @@ export default function Layout({ children }) {
                 Compare
               </Link>
             )}
+            {loc.pathname !== "/portfolio" && (
+              <Link to="/portfolio" className="btn-ghost hidden lg:inline-flex">
+                Portfolio
+              </Link>
+            )}
             {loc.pathname !== "/analyze" && (
               <Link to="/analyze" className="btn-primary">
                 Analyze a strategy

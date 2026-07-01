@@ -30,6 +30,8 @@ import payments
 import report as report_mod
 import sample_data
 import statement_import
+from engine import portfolio as eportfolio
+from engine import stats as estats
 
 # Public Supabase config baked in as defaults so the app works without extra
 # host setup. The publishable/anon key is designed to be public (it ships to
@@ -89,6 +91,23 @@ class StrategyCodeRequest(BaseModel):
     code: str | None = None
     language: str | None = None
     context: str | None = None
+
+
+class PortfolioStrategy(BaseModel):
+    name: str | None = None
+    data: str | None = None
+    returns: list[float] | None = None
+    weight: float = 1.0
+
+
+class PortfolioRequest(BaseModel):
+    strategies: list[PortfolioStrategy] = Field(default_factory=list)
+    frequency: str = "daily"
+    value_type: str = "auto"
+    is_percentage: str | bool = "auto"
+    data_kind: str = "auto"
+    num_trials: int = 1
+    confidence: float = 0.95
 
 
 # Simple in-memory daily rate limit for the (paid) AI review. Resets on restart;
@@ -306,6 +325,87 @@ async def import_statement(file: UploadFile = File(...)):
         "source_format": result.source_format,
         "n": result.n,
         "notes": result.notes,
+    }
+
+
+@app.post("/api/portfolio")
+def portfolio(req: PortfolioRequest, authorization: str | None = Header(default=None)):
+    """Combine multiple strategies into one weighted portfolio + correlation.
+
+    Pro-only. Parses each strategy's returns, aligns them to the shared length,
+    computes the correlation matrix and a weighted portfolio, and runs the full
+    analysis on the combined stream.
+    """
+    tier, _user = _resolve_tier(authorization)
+    if tier != "pro":
+        raise HTTPException(402, "Portfolio analysis is a Pro feature. Unlock Pro to use it.")
+
+    strategies = req.strategies or []
+    if len(strategies) < 2:
+        raise HTTPException(400, "Provide at least two strategies to combine.")
+    if len(strategies) > 6:
+        raise HTTPException(400, "Up to six strategies can be combined at once.")
+
+    returns_list, names, weights = [], [], []
+    for i, s in enumerate(strategies):
+        if s.returns:
+            arr = np.asarray(s.returns, dtype=float)
+            arr = arr[np.isfinite(arr)]
+        elif s.data and s.data.strip():
+            try:
+                arr = parsing.parse_input(
+                    s.data, value_type=req.value_type,
+                    is_percentage=req.is_percentage, data_kind=req.data_kind,
+                ).returns
+            except parsing.ParseError as e:
+                raise HTTPException(400, f"Strategy {i + 1}: {e}")
+        else:
+            raise HTTPException(400, f"Strategy {i + 1} has no data.")
+        if len(arr) < 2:
+            raise HTTPException(400, f"Strategy {i + 1} needs at least 2 observations.")
+        returns_list.append(arr)
+        names.append(s.name or f"Strategy {chr(65 + i)}")
+        weights.append(s.weight if s.weight is not None else 1.0)
+
+    aligned, m = eportfolio.align_returns(returns_list)
+    if m < 10:
+        raise HTTPException(400, "The strategies overlap for fewer than 10 periods.")
+
+    corr = eportfolio.correlation_matrix(aligned)
+    norm_w = eportfolio.normalized_weights(weights, len(aligned))
+    combined = eportfolio.combine(aligned, weights)
+    avg_corr = eportfolio.average_offdiagonal(corr)
+    div_status, div_message = eportfolio.diversification(avg_corr)
+
+    ppy = analysis_mod.periods_per_year(req.frequency)
+    per_strategy = [
+        {
+            "name": names[i],
+            "weight": norm_w[i],
+            "sharpe": analysis_mod._safe(estats.sharpe_annualized(aligned[i], ppy)),
+            "return": analysis_mod._safe(estats.total_return(aligned[i])),
+        }
+        for i in range(len(aligned))
+    ]
+
+    portfolio_analysis = analysis_mod.run_analysis(
+        returns=combined, frequency=req.frequency,
+        num_trials=max(1, int(req.num_trials)), confidence=float(req.confidence),
+        value_type="returns", tier="pro",
+        parse_meta={"n": int(len(combined)), "value_type": "returns",
+                    "data_kind": "timeseries", "conversions": [], "warnings": []},
+    )
+
+    return {
+        "labels": names,
+        "weights": norm_w,
+        "correlation": corr,
+        "avg_correlation": avg_corr,
+        "diversification_status": div_status,
+        "diversification_message": div_message,
+        "n_aligned": m,
+        "per_strategy": per_strategy,
+        "portfolio": portfolio_analysis,
     }
 
 

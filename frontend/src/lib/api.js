@@ -60,6 +60,15 @@ export async function getMe() {
   return jsonOrThrow(await fetch("/api/auth/me", { headers: { ...authHeaders() } }));
 }
 
+export async function buildPortfolio(payload) {
+  const res = await fetch("/api/portfolio", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify(payload),
+  });
+  return jsonOrThrow(res); // 402 if not Pro
+}
+
 export async function analyzeStrategyCode({ code, language, context }) {
   const res = await fetch("/api/ai/analyze-strategy", {
     method: "POST",
