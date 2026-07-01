@@ -5,17 +5,19 @@ const GROUPS = [
   {
     title: "The full report",
     items: [
-      "The complete statistical verdict and every core metric — total return, CAGR, annualized Sharpe, max drawdown, PSR",
-      "Equity curve, drawdown, return distribution and rolling-Sharpe charts",
+      "Your prioritized Validation Plan — specific next steps read off your own results, ranked critical to minor",
+      "The complete verdict and full metrics table — total return, CAGR, annualized & autocorrelation-adjusted Sharpe, Sortino, Calmar, max drawdown, PSR, minimum track-record length",
+      "Equity, drawdown, return-distribution and rolling-Sharpe charts",
       "Plain-English explanation of every check, beginner to quant",
     ],
   },
   {
     title: "Overfitting & data-mining tests",
     items: [
-      "Deflated Sharpe Ratio — adjusts for how many variations you tried",
+      "Deflated Sharpe Ratio & Sharpe haircut — adjust for how many variations you tried",
       "Backtest-overfit probability (PBO)",
       "Out-of-sample degradation & multi-window walk-forward consistency",
+      "Vs. Random — race your strategy against 1,000 zero-edge random ones",
     ],
   },
   {
@@ -35,10 +37,11 @@ const GROUPS = [
     ],
   },
   {
-    title: "Tools & deliverables",
+    title: "Multi-strategy & tools",
     items: [
-      "Kelly position sizing — growth-optimal and safer fractional sizings",
       "Compare two strategies side by side",
+      "Combine a portfolio of up to six strategies, with a correlation matrix",
+      "Kelly position sizing — growth-optimal and safer fractional sizings",
       "AI strategy code review — structural flaws the numbers can’t catch",
       "Downloadable PDF report & saved analysis history",
     ],

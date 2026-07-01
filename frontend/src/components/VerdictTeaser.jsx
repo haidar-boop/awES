@@ -3,12 +3,12 @@ import VerdictCard from "./VerdictCard.jsx";
 import { int } from "../lib/format.js";
 
 const PRO_INCLUDES = [
-  "Every core metric — returns, Sharpe, drawdown, PSR",
-  "Deflated Sharpe & backtest-overfit probability",
-  "Monte Carlo simulation, risk of ruin & missed-trade robustness",
-  "Walk-forward consistency & out-of-sample degradation",
+  "A prioritized Validation Plan — exact next steps for your strategy",
+  "Every metric & chart — returns, Sharpe, drawdown, PSR + explanations",
+  "Deflated Sharpe, PBO, walk-forward & Vs.-Random overfitting tests",
+  "Monte Carlo, risk of ruin & missed-trade robustness",
   "Trade-dependency, drawdown recovery & returns heatmap",
-  "Kelly position sizing, strategy comparison & the PDF report",
+  "Compare & combine strategies, Kelly sizing, AI review & the PDF",
 ];
 
 // The only thing a non-Pro user sees after running their own analysis: the
