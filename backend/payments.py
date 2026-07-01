@@ -187,14 +187,27 @@ def stripe_has_paid_email(email: str | None) -> bool:
     return False
 
 
-def email_has_pro(email: str | None) -> bool:
-    """Has this email completed a purchase?
+# Comp'd Pro access (no purchase required) for the owner, plus any addresses in
+# the PRO_EMAILS env var (comma-separated). This is safe: Pro still requires a
+# *verified* account, so only someone who controls the inbox can activate it --
+# it can't be used to grant strangers free Pro.
+_COMP_PRO_EMAILS = {"bigmoehaidar@gmail.com"} | {
+    e.strip().lower()
+    for e in os.environ.get("PRO_EMAILS", "").split(",")
+    if e.strip()
+}
 
-    Checks the local webhook record first (fast), then the provider APIs
-    (durable, survives restarts): Lemon Squeezy, then Stripe.
+
+def email_has_pro(email: str | None) -> bool:
+    """Has this email completed a purchase (or is it comp'd for the owner)?
+
+    Checks the owner allowlist, then the local webhook record (fast), then the
+    provider APIs (durable, survives restarts): Lemon Squeezy, then Stripe.
     """
     if not email:
         return False
+    if email.strip().lower() in _COMP_PRO_EMAILS:
+        return True
     if find_paid_key_by_email(email):
         return True
     if lemonsqueezy_has_paid_email(email):
