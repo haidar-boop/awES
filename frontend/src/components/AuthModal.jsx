@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useAuth } from "../lib/auth.jsx";
 import { useAnalysis } from "../lib/store.jsx";
 import { analyze } from "../lib/api.js";
@@ -124,7 +125,7 @@ export default function AuthModal() {
     return `${base}${sep}${param}=${encodeURIComponent(email)}`;
   }
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm" onClick={close}>
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="card relative my-auto w-full max-w-lg p-6" onClick={(e) => e.stopPropagation()}>
@@ -270,6 +271,7 @@ export default function AuthModal() {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
