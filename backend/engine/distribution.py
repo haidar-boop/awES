@@ -17,7 +17,9 @@ from .stats import sharpe_per_period
 def skewness(returns: np.ndarray) -> float:
     """Fisher-Pearson skewness (g1). 0 for a symmetric distribution."""
     returns = np.asarray(returns, dtype=float)
-    if len(returns) < 3:
+    # Constant / near-constant data has no defined shape; scipy would warn on
+    # the catastrophic cancellation, so short-circuit to the symmetric default.
+    if len(returns) < 3 or np.std(returns) < 1e-12:
         return 0.0
     return float(sp_stats.skew(returns, bias=True))
 
@@ -25,7 +27,7 @@ def skewness(returns: np.ndarray) -> float:
 def kurtosis_nonexcess(returns: np.ndarray) -> float:
     """Non-excess kurtosis (g4). A normal distribution has g4 == 3."""
     returns = np.asarray(returns, dtype=float)
-    if len(returns) < 4:
+    if len(returns) < 4 or np.std(returns) < 1e-12:
         return 3.0
     # scipy returns *excess* kurtosis by default; add 3 for non-excess.
     return float(sp_stats.kurtosis(returns, fisher=True, bias=True) + 3.0)
