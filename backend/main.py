@@ -213,42 +213,6 @@ def me(authorization: str | None = Header(default=None)):
     }
 
 
-@app.get("/api/debug/stripe")
-def debug_stripe(email: str):
-    """Temporary diagnostic: what does Stripe show for this email?
-
-    Open in a browser: /api/debug/stripe?email=you@example.com
-    """
-    sk = os.environ.get("STRIPE_API_KEY")
-    out = {"stripe_configured": bool(sk), "email": email, "scanned": 0,
-           "email_seen": False, "email_paid": False, "statuses": {}}
-    if not sk:
-        return out
-    target = email.strip().lower()
-    url = "https://api.stripe.com/v1/checkout/sessions?limit=100"
-    try:
-        for _ in range(3):
-            data = payments._stripe_get(url, sk)
-            for s in data.get("data", []):
-                out["scanned"] += 1
-                cd = s.get("customer_details") or {}
-                em = (cd.get("email") or s.get("customer_email") or "").strip().lower()
-                ps = s.get("payment_status")
-                out["statuses"][ps] = out["statuses"].get(ps, 0) + 1
-                if em == target:
-                    out["email_seen"] = True
-                    if ps == "paid":
-                        out["email_paid"] = True
-            if data.get("has_more") and data.get("data"):
-                url = ("https://api.stripe.com/v1/checkout/sessions"
-                       f"?limit=100&starting_after={data['data'][-1]['id']}")
-            else:
-                break
-    except Exception as e:
-        out["error"] = str(e)[:300]
-    return out
-
-
 @app.get("/api/samples")
 def samples():
     return {"samples": sample_data.list_samples()}
