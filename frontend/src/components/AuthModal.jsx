@@ -125,18 +125,23 @@ export default function AuthModal() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" onClick={close}>
-      <div className="card w-full max-w-lg p-6" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-start justify-between">
-          <h2 className="font-display text-xl font-bold tracking-tight text-slate-900 dark:text-txt">
-            Unlock the full report
-          </h2>
-          <button onClick={close} className="text-slate-400 hover:text-slate-200" aria-label="Close">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm" onClick={close}>
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div className="card relative my-auto w-full max-w-lg p-6" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={close}
+            className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-ink-elevated dark:hover:text-txt"
+            aria-label="Close"
+          >
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
             </svg>
           </button>
-        </div>
+          <div className="pr-8">
+            <h2 className="font-display text-xl font-bold tracking-tight text-slate-900 dark:text-txt">
+              Unlock the full report
+            </h2>
+          </div>
         <p className="mt-1 text-sm text-slate-500 dark:text-txt-muted">
           The verdict and core stats are free. Pro adds the advanced robustness
           suite and the shareable PDF.
@@ -262,6 +267,7 @@ export default function AuthModal() {
               {msg.text}
             </p>
           )}
+          </div>
         </div>
       </div>
     </div>

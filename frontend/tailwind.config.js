@@ -47,11 +47,15 @@ export default {
           "0%": { transform: "translateY(-0.08em)", opacity: "0.55" },
           "100%": { transform: "translateY(0)", opacity: "1" },
         },
-        // System unlock reveal for the access gate -> dashboard
+        // System unlock reveal for the access gate -> dashboard.
+        // NOTE: the 100% frame MUST end at transform/filter `none`. A lingering
+        // transform/filter on this wrapper would become the containing block for
+        // any `position: fixed` descendant (e.g. the auth modal), pinning it to
+        // this element instead of the viewport.
         unlock: {
           "0%": { opacity: "0", transform: "scale(0.985)", filter: "blur(2px)" },
           "60%": { opacity: "1", filter: "blur(0)" },
-          "100%": { opacity: "1", transform: "scale(1)", filter: "blur(0)" },
+          "100%": { opacity: "1", transform: "none", filter: "none" },
         },
         // Settle / stabilize on data render
         settle: {
