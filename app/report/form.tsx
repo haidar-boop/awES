@@ -3,8 +3,10 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { Camera } from 'lucide-react';
 import { isValidUpc } from '@/lib/core/upc';
 import { CATEGORIES } from '@/lib/core/pricing';
+import { BarcodeScanner } from '../components/BarcodeScanner';
 
 interface RetailerOpt {
   id: string;
@@ -46,6 +48,7 @@ export function ReportForm({ retailers, stores }: { retailers: RetailerOpt[]; st
   const [notes, setNotes] = useState('');
   const [purchased, setPurchased] = useState(false);
   const [photoNote, setPhotoNote] = useState<string[]>([]);
+  const [scanning, setScanning] = useState(false);
 
   const storeMatches = useMemo(() => {
     const inRetailer = stores.filter((s) => s.retailerId === retailerId);
@@ -194,15 +197,26 @@ export function ReportForm({ retailers, stores }: { retailers: RetailerOpt[]; st
             <legend className="text-lg font-bold">What did you find?</legend>
             <div>
               <label htmlFor="upc" className="mb-1 block text-sm font-medium">UPC (barcode on the product) *</label>
-              <input
-                id="upc"
-                className="input font-mono"
-                inputMode="numeric"
-                placeholder="12–13 digits"
-                value={upc}
-                onChange={(e) => setUpc(e.target.value)}
-                aria-invalid={upc.length > 0 && !upcValid}
-              />
+              <div className="flex gap-2">
+                <input
+                  id="upc"
+                  className="input flex-1 font-mono"
+                  inputMode="numeric"
+                  placeholder="12–13 digits"
+                  value={upc}
+                  onChange={(e) => setUpc(e.target.value)}
+                  aria-invalid={upc.length > 0 && !upcValid}
+                />
+                <button
+                  type="button"
+                  onClick={() => setScanning(true)}
+                  className="btn-secondary !px-4"
+                  aria-label="Scan barcode with camera"
+                  title="Scan with camera"
+                >
+                  <Camera className="h-5 w-5" />
+                </button>
+              </div>
               {upc.length >= 11 && (
                 <p className={`mt-1 text-xs font-medium ${upcValid ? 'text-emerald-600' : 'text-red-500'}`}>
                   {upcValid ? '✓ Valid check digit' : '✗ Check digit doesn’t match — re-read the barcode digits'}
@@ -338,6 +352,16 @@ export function ReportForm({ retailers, stores }: { retailers: RetailerOpt[]; st
           </div>
         )}
       </div>
+
+      {scanning && (
+        <BarcodeScanner
+          onDetect={(scanned) => {
+            setUpc(scanned);
+            setScanning(false);
+          }}
+          onClose={() => setScanning(false)}
+        />
+      )}
 
       <p className="mt-4 text-xs leading-relaxed text-stone-400">
         House rules: register scans only — no employee-only internal data, no tag-swapping, ever. New accounts

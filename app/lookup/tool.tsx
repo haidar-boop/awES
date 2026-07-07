@@ -2,14 +2,16 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search } from 'lucide-react';
+import { Camera, Search } from 'lucide-react';
 import { classifyLookup } from '@/lib/core/upc';
+import { BarcodeScanner } from '../components/BarcodeScanner';
 
 export function LookupTool() {
   const router = useRouter();
   const params = useSearchParams();
   const [value, setValue] = useState(params.get('q') ?? '');
   const [error, setError] = useState<string | null>(null);
+  const [scanning, setScanning] = useState(false);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +40,15 @@ export function LookupTool() {
           className="input flex-1 !py-3.5 font-mono text-base"
           autoFocus
         />
+        <button
+          type="button"
+          onClick={() => setScanning(true)}
+          className="btn-secondary !px-4"
+          aria-label="Scan barcode with camera"
+          title="Scan with camera"
+        >
+          <Camera className="h-5 w-5" />
+        </button>
         <button type="submit" className="btn-primary !px-5">
           <Search className="h-5 w-5" />
           <span className="hidden sm:inline">Check</span>
@@ -47,6 +58,15 @@ export function LookupTool() {
         <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-400" role="alert">
           {error}
         </p>
+      )}
+      {scanning && (
+        <BarcodeScanner
+          onDetect={(upc) => {
+            setScanning(false);
+            router.push(`/item/${upc}`);
+          }}
+          onClose={() => setScanning(false)}
+        />
       )}
     </form>
   );
