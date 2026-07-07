@@ -3,6 +3,7 @@ import './globals.css';
 import { SiteHeader } from './components/SiteHeader';
 import { SiteFooter } from './components/SiteFooter';
 import { MobileTabBar } from './components/MobileTabBar';
+import { PwaRegister } from './components/PwaRegister';
 import { siteUrl } from '@/lib/utils';
 
 export const metadata: Metadata = {
@@ -24,6 +25,9 @@ export const metadata: Metadata = {
     type: 'website',
   },
   twitter: { card: 'summary_large_image' },
+  manifest: '/manifest.webmanifest',
+  icons: { icon: '/icon.svg' },
+  appleWebApp: { capable: true, title: 'PennyRadar', statusBarStyle: 'default' },
 };
 
 export const viewport: Viewport = {
@@ -58,6 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </main>
         <SiteFooter />
         <MobileTabBar />
+        <PwaRegister />
       </body>
     </html>
   );
