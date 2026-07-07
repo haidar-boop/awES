@@ -45,15 +45,62 @@ function demoSnapshot(): CoreSnapshot {
   const { STORES } = require('../demo/stores') as typeof import('../demo/stores');
   const { ITEMS, DEALS, REPORTS } = require('../demo/deals') as typeof import('../demo/deals');
   const { USERS, BADGES, USER_BADGES, STORIES } = require('../demo/community') as typeof import('../demo/community');
+  const { getLocalData, LOCAL_USER } = require('../local/store') as typeof import('../local/store');
+
+  // Merge your local finds (LOCAL MODE, DECISIONS.md #21) over the seed data.
+  const local = getLocalData();
+  const deals: DealRec[] = [...DEALS.map((d) => ({ ...d })), ...local.deals];
+
+  // Overlay local votes onto any deal (including seed deals).
+  for (const deal of deals) {
+    const votes = local.votes.filter((v) => v.dealId === deal.id);
+    if (!votes.length) continue;
+    const confirms = votes.filter((v) => v.kind === 'confirm');
+    const deads = votes.filter((v) => v.kind === 'dead');
+    deal.deadVotes += deads.length;
+    if (deal.deadVotes >= 3) deal.status = 'dead';
+    if (confirms.length) {
+      deal.confirmCount += confirms.length;
+      const latest = confirms.map((v) => v.createdAt).sort().pop()!;
+      if (latest > deal.lastConfirmedAt) deal.lastConfirmedAt = latest;
+      if (deal.status !== 'dead' && deal.status !== 'verified') deal.status = 'likely';
+    }
+  }
+
+  const approvedLocal = local.reports.length;
+  const localValue = local.reports.reduce((sum, r) => {
+    const item = [...ITEMS, ...local.items].find((i) => i.id === deals.find((d) => d.id === r.dealId)?.itemId);
+    return sum + (item?.originalPrice ?? 0);
+  }, 0);
+
+  const users: UserRec[] = [
+    ...USERS,
+    {
+      id: LOCAL_USER.id,
+      username: LOCAL_USER.username,
+      email: LOCAL_USER.email,
+      avatarUrl: null,
+      homeProvince: null,
+      trustLevel: 'trusted',
+      role: 'admin',
+      approvedReports: approvedLocal,
+      retailValueFound: localValue,
+      createdAt: new Date().toISOString(),
+    },
+  ];
+
+  const userBadges = { ...USER_BADGES };
+  if (approvedLocal >= 1) userBadges[LOCAL_USER.id] = ['first-find'];
+
   return {
     retailers: RETAILERS,
     stores: STORES,
-    items: ITEMS,
-    deals: DEALS,
-    reports: REPORTS,
-    users: USERS,
+    items: [...ITEMS, ...local.items],
+    deals,
+    reports: [...REPORTS, ...local.reports],
+    users,
     badges: BADGES,
-    userBadges: USER_BADGES,
+    userBadges,
     stories: STORIES,
     commentCounts: {},
   };

@@ -18,5 +18,6 @@ Thumbs.db
 .idea/
 
 drizzle/meta/
+.data/
 *.tsbuildinfo
 next-env.d.ts

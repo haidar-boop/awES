@@ -1,18 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { getSessionUser } from '@/lib/auth';
 import { isDbConfigured, getDb, schema } from '@/lib/db';
 import { and, eq } from 'drizzle-orm';
 
-const Body = z.object({ itemId: z.string().uuid() });
+const Body = z.object({ itemId: z.string().min(1).max(64) });
 
 export async function POST(req: NextRequest) {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: 'Sign in to save items' }, { status: 401 });
-  if (!isDbConfigured()) return NextResponse.json({ error: 'Demo mode', demo: true }, { status: 503 });
 
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: 'Invalid' }, { status: 400 });
+
+  if (!isDbConfigured()) {
+    const { toggleWatchlistLocal } = await import('@/lib/local/store');
+    toggleWatchlistLocal(parsed.data.itemId, true);
+    revalidatePath('/watchlist');
+    return NextResponse.json({ ok: true });
+  }
 
   await getDb()
     .insert(schema.watchlist)
@@ -24,10 +31,16 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: 'Sign in required' }, { status: 401 });
-  if (!isDbConfigured()) return NextResponse.json({ error: 'Demo mode', demo: true }, { status: 503 });
 
   const itemId = new URL(req.url).searchParams.get('itemId');
   if (!itemId) return NextResponse.json({ error: 'Missing itemId' }, { status: 400 });
+
+  if (!isDbConfigured()) {
+    const { toggleWatchlistLocal } = await import('@/lib/local/store');
+    toggleWatchlistLocal(itemId, false);
+    revalidatePath('/watchlist');
+    return NextResponse.json({ ok: true });
+  }
 
   await getDb()
     .delete(schema.watchlist)

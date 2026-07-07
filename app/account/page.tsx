@@ -43,6 +43,12 @@ export default async function AccountPage() {
       <div className="card mt-6 p-6">
         <p className="font-semibold">@{user.username}</p>
         <p className="text-sm text-stone-500">{user.email}</p>
+        {user.id === 'local-user' && (
+          <p className="mt-2 rounded-lg bg-penny-50 px-3 py-2 text-sm text-penny-800 dark:bg-penny-950 dark:text-penny-200">
+            🏠 Local mode: this is your personal install. Finds, votes, watchlist, and scout entries save to{' '}
+            <code className="font-mono">.data/local-store.json</code> on this machine — no accounts, no cloud.
+          </p>
+        )}
         <p className="mt-2 text-sm">
           <span className="chip bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300">
             {user.trustLevel === 'trusted' ? '✓ Trusted hunter — reports publish instantly' : 'New hunter — reports enter moderation'}

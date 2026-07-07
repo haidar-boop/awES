@@ -26,6 +26,9 @@ export default async function WatchlistPage() {
   if (isDbConfigured()) {
     const rows = await getDb().select().from(schema.watchlist).where(eq(schema.watchlist.userId, user.id));
     itemIds = rows.map((r) => r.itemId);
+  } else {
+    const { getWatchlistLocal } = await import('@/lib/local/store');
+    itemIds = getWatchlistLocal();
   }
   const views = (await getDealViews({ includeDead: true })).filter((v) => itemIds.includes(v.item.id));
 

@@ -41,6 +41,12 @@ export interface SessionUser {
  * Emails in ADMIN_EMAILS are bootstrapped as admins.
  */
 export async function getSessionUser(): Promise<SessionUser | null> {
+  // LOCAL MODE: no database → this is a single-user personal install.
+  // You're always signed in as the owner (DECISIONS.md #21).
+  if (!isDbConfigured()) {
+    const { LOCAL_USER } = await import('./local/store');
+    return LOCAL_USER;
+  }
   if (!isAuthConfigured()) return null;
   const supabase = supabaseServer();
   const {

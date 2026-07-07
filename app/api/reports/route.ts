@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { getSessionUser } from '@/lib/auth';
 import { isDbConfigured, getDb, schema } from '@/lib/db';
@@ -40,12 +41,6 @@ export async function POST(req: NextRequest) {
   if (user.trustLevel === 'banned') {
     return NextResponse.json({ error: 'Account suspended' }, { status: 403 });
   }
-  if (!isDbConfigured()) {
-    return NextResponse.json(
-      { error: 'Demo mode: reports are disabled without a database. Set DATABASE_URL.', demo: true },
-      { status: 503 }
-    );
-  }
 
   const parsed = ReportSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
@@ -57,8 +52,46 @@ export async function POST(req: NextRequest) {
   const body = parsed.data;
 
   // Receipt claims require a receipt photo — this is what auto-verifies deals.
+  // In local (single-user) mode your own word is enough: no photo required.
   const hasReceiptPhoto = body.photos.some((p) => p.kind === 'receipt');
-  const hasReceipt = body.hasReceipt && hasReceiptPhoto;
+  const hasReceipt = body.hasReceipt && (hasReceiptPhoto || !isDbConfigured());
+
+  // LOCAL MODE: persist to the JSON store instead of Postgres.
+  if (!isDbConfigured()) {
+    const { submitReportLocal } = await import('@/lib/local/store');
+    const { loadCore } = await import('@/lib/data/source');
+    const snap = await loadCore();
+    if (!snap.stores.some((s) => s.id === body.storeId && s.retailerId === body.retailerId)) {
+      return NextResponse.json({ error: 'Store not found for that retailer' }, { status: 400 });
+    }
+    const result = submitReportLocal(
+      {
+        retailerId: body.retailerId,
+        storeId: body.storeId,
+        upc: normalizeUpc(body.upc)!,
+        sku: body.sku,
+        itemName: body.itemName,
+        brand: body.brand,
+        category: body.category,
+        originalPrice: body.originalPrice,
+        scannedPrice: body.scannedPrice,
+        quantitySeen: body.quantitySeen,
+        foundAt: new Date(body.foundAt).toISOString(),
+        locationNote: body.locationNote,
+        notes: body.notes,
+        hasReceipt,
+      },
+      snap
+    );
+    revalidatePath('/', 'layout');
+    return NextResponse.json({
+      ...result,
+      moderationStatus: 'approved',
+      message: result.merged
+        ? 'Saved as a confirmation of a deal already on your list!'
+        : 'Saved to your local find log — it’s live on your list now.',
+    });
+  }
 
   const trusted = user.trustLevel === 'trusted' || user.role !== 'user';
   if (!trusted) {
