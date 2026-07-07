@@ -8,6 +8,7 @@ const COLS: { title: string; links: { href: string; label: string }[] }[] = [
       { href: '/deals/map', label: 'Map View' },
       { href: '/lookup', label: 'UPC / SKU Lookup' },
       { href: '/decoder', label: 'Tag Decoder' },
+      { href: '/scout', label: 'Scout Tracker' },
       { href: '/report', label: 'Report a Find' },
     ],
   },

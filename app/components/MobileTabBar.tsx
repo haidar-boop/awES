@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { List, Map, Coins, Bell, User } from 'lucide-react';
+import { List, Map, Coins, Telescope, User } from 'lucide-react';
 
-/** Bottom tab bar on mobile: Deals / Map / Report / Alerts / Profile (spec §8). */
+/** Bottom tab bar on mobile: Deals / Map / Report / Scout / Profile. */
 const TABS = [
   { href: '/deals', label: 'Deals', icon: List },
   { href: '/deals/map', label: 'Map', icon: Map },
   { href: '/report', label: 'Report', icon: Coins, primary: true },
-  { href: '/alerts', label: 'Alerts', icon: Bell },
+  { href: '/scout', label: 'Scout', icon: Telescope },
   { href: '/account', label: 'Profile', icon: User },
 ];
 
