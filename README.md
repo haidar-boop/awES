@@ -19,10 +19,24 @@ npm install
 npm run dev          # → http://localhost:3000
 ```
 
-With **no environment variables at all**, the app runs in **demo mode**: every read-only surface (live
-list, map, filters, postal-code radius search, item pages, barcodes, decoder, guides, leaderboard, admin
-dashboard) works against 25 realistic seeded deals across ON/AB/BC. Write actions (reporting, votes,
-alerts, checkout) return a friendly "demo mode" message until you connect services.
+With **no environment variables at all**, the app runs in **local mode** — a complete single-user
+install. Everything read-only (live list, map, filters, postal-code radius search, item pages, barcodes,
+decoder, guides) works against 25 seeded sample deals, and **your own data works too**: you're
+auto-signed-in as the owner, and reports, votes, watchlist, and scout entries persist to
+`.data/local-store.json` on your machine (gitignored — back this file up if your finds matter to you).
+Only multi-user features (email alerts, Stripe, moderation queues) need cloud services.
+
+**Personal hunting toolkit** (all zero-config):
+
+- **🪙 Find log** — Report a Find saves locally, merges duplicates as confirmations, receipt purchases
+  auto-verify, and everything appears in your live list and price history.
+- **📷 Camera scanning** — the camera button on Lookup, Report, and Scout reads UPCs with the native
+  BarcodeDetector API (ZXing fallback for iOS Safari). Needs HTTPS or localhost.
+- **🔭 Scout tracker** (`/scout`) — log a late-stage clearance tag with its printed clearance date; the
+  tracker computes when the ~14-week penny window opens and shows what's due.
+- **📱 Installable PWA** — "Add to Home Screen" on your phone; visited pages (and their barcodes) keep
+  working in mid-store dead zones. To use the camera/PWA from your phone against a home server, serve
+  over HTTPS (e.g. `npx next start` behind Tailscale/Caddy) — browsers require a secure origin.
 
 ```bash
 npm test             # 50 unit tests: confidence engine, dedupe, UPC check digits, geo/FSA, cash rounding

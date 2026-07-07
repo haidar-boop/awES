@@ -143,3 +143,32 @@ retailer notes) renders through `marked` server-side only.
 System font stack with Inter preferred (no `next/font` download at build): zero font-transfer cost, no
 FOIT, and the deal feed ships almost no client JS (server components; the interactive DealCard is the
 exception and shares one small bundle). This is the CWV-conservative choice for the ≥90 mobile targets.
+
+## 21. Local mode (single-user tier)
+
+Without `DATABASE_URL`, the app is a personal install, not a crippled demo: `getSessionUser()` returns a
+synthetic owner (trusted + admin), and reports/votes/watchlist persist to `.data/local-store.json` via
+`lib/local/store.ts`, reusing the same dedupe and type shapes as the DB pipeline so the read model merges
+local finds seamlessly over the seed data. JSON-file over SQLite: zero native dependencies, human-readable,
+trivially backed up, and single-user write volume never needs more. Consequence to know: a *hosted*
+deployment without a DB would let any visitor write to that file — local mode is for personal machines;
+public deployments should set `DATABASE_URL`.
+
+## 22. Barcode scanning engine choice
+
+Native `BarcodeDetector` first (Chrome/Edge/Android — hardware-accelerated, zero bytes shipped), ZXing
+(`@zxing/browser`) as a dynamic import only on browsers without it (iOS Safari). Reads are ignored until a
+check-digit-valid UPC appears, which filters partial/false decodes without user-visible errors.
+
+## 23. Scout tracker is local-only in every mode
+
+Scout entries (tag + clearance date → 98-day penny-watch alarm) are personal scouting notes, not community
+data — publishing "this will penny on Oct 12 at store X" would get stock pulled. So they stay in the local
+store even when a database is configured. The 98-day constant is exported (`PENNY_WATCH_DAYS`) and the UI
+repeats the caveat that 14 weeks is a heuristic.
+
+## 24. Service worker scope
+
+Hand-written `public/sw.js` (no Workbox): cache-first for immutable `/_next/static` assets, network-first
+with cache fallback for page navigations, `/offline` as last resort, and **no caching of `/api/*`** —
+stale prices are worse than no prices. Registered only in production builds.
