@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-stone-50 text-stone-900 antialiased dark:bg-stone-950 dark:text-stone-100;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-penny-500 ring-offset-2 ring-offset-stone-50 dark:ring-offset-stone-950;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-penny-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-penny-600 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-stone-800 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800;
+  }
+  .input {
+    @apply w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900 placeholder-stone-400 focus:border-penny-500 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100;
+  }
+  .card {
+    @apply rounded-xl border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-900;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+  .prose-penny {
+    @apply prose-custom max-w-none;
+  }
+}
+
+/* Minimal typographic styles for rendered markdown (no @tailwindcss/typography dep) */
+.prose-custom h2 {
+  @apply mb-3 mt-8 text-2xl font-bold tracking-tight;
+}
+.prose-custom h3 {
+  @apply mb-2 mt-6 text-lg font-semibold;
+}
+.prose-custom p {
+  @apply my-4 leading-relaxed text-stone-700 dark:text-stone-300;
+}
+.prose-custom a {
+  @apply font-medium text-penny-600 underline decoration-penny-300 underline-offset-2 hover:text-penny-500 dark:text-penny-400;
+}
+.prose-custom ul,
+.prose-custom ol {
+  @apply my-4 space-y-2 pl-6 leading-relaxed text-stone-700 dark:text-stone-300;
+}
+.prose-custom ul {
+  @apply list-disc;
+}
+.prose-custom ol {
+  @apply list-decimal;
+}
+.prose-custom blockquote {
+  @apply my-4 border-l-4 border-penny-300 pl-4 italic text-stone-600 dark:text-stone-400;
+}
+.prose-custom strong {
+  @apply font-semibold text-stone-900 dark:text-stone-100;
+}
+.prose-custom table {
+  @apply my-4 w-full border-collapse text-sm;
+}
+.prose-custom th,
+.prose-custom td {
+  @apply border border-stone-200 px-3 py-2 text-left dark:border-stone-700;
+}
+.prose-custom code {
+  @apply rounded bg-stone-100 px-1.5 py-0.5 text-sm dark:bg-stone-800;
+}
+
+/* Leaflet */
+.leaflet-container {
+  @apply z-0 h-full w-full rounded-xl;
+}
+
+/* Price display uses tabular numerals (spec §8) */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
