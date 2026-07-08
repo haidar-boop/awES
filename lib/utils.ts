@@ -31,7 +31,11 @@ export function slugify(text: string): string {
 }
 
 export function siteUrl(path = ''): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const base =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    // Vercel injects the deployment host automatically (no protocol).
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '') ||
+    'http://localhost:3000';
   return `${base.replace(/\/$/, '')}${path}`;
 }
 

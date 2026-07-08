@@ -89,18 +89,33 @@ Create two prices in CAD (`STRIPE_PRICE_MONTHLY` = $7/month, `STRIPE_PRICE_YEARL
 webhook at `/api/stripe/webhook` with events `checkout.session.completed`,
 `customer.subscription.updated`, `customer.subscription.deleted`.
 
-### 5. Deploy (Vercel)
+### 5. Deploy (Vercel — free)
 
-Push to GitHub → import in Vercel → add the env vars. `vercel.json` registers the four cron jobs:
+1. Push this repo to GitHub (already done if you're reading this there).
+2. Go to [vercel.com/new](https://vercel.com/new), sign in with GitHub, and **Import** the repo.
+3. Under "Git Branch", pick `claude/delete-repository-8xe8wa` (or make it the default branch first).
+4. Click **Deploy** — no settings needed; Next.js is auto-detected. You get an HTTPS URL like
+   `https://pennyradar-xxx.vercel.app`, which also unlocks the **camera scanner and PWA install on your phone**.
+
+**Persistence caveat (important for personal use):** Vercel's servers are serverless with no permanent
+disk. The local JSON find-log works there (it writes to `/tmp`) but is wiped whenever the function
+recycles — fine for kicking the tires, not for keeping your finds. To persist finds on Vercel, create a
+free [Supabase](https://supabase.com) project and add its connection string as a `DATABASE_URL`
+environment variable in Vercel (Settings → Environment Variables), then run `npm run db:push && npm run
+db:seed` once from your machine with the same `DATABASE_URL`. If you run the app on your own computer
+instead, the JSON file persists perfectly with zero setup.
+
+`vercel.json` registers two cron jobs (the free Hobby plan allows a maximum of two, daily-or-slower):
 
 | Cron | Schedule | Purpose |
 |---|---|---|
-| `/api/cron/decay` | hourly | Confidence decay: verified → likely → unconfirmed → dead |
-| `/api/cron/alerts` | every 5 min | Area-alert matcher (instant + daily) |
+| `/api/cron/decay` | daily 09:00 UTC | Confidence decay: verified → likely → unconfirmed → dead |
 | `/api/cron/digest` | weekly (Sat) | "This week's penny finds in {province}" digest |
-| `/api/cron/sitemap` | daily | Revalidates sitemap/RSS/feed caches |
 
-Set `CRON_SECRET` and Vercel sends it automatically as the `Authorization: Bearer` header.
+On a paid Vercel plan you can restore the full cadence (hourly decay, 5-minute `/api/cron/alerts`
+matcher, daily `/api/cron/sitemap`) by adding those entries back to `vercel.json` — the endpoints all
+exist regardless. Set `CRON_SECRET` and Vercel sends it automatically as the `Authorization: Bearer`
+header. Both crons no-op harmlessly without a database.
 
 ---
 

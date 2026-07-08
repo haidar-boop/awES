@@ -46,7 +46,14 @@ interface LocalData {
 }
 
 const EMPTY: LocalData = { items: [], deals: [], reports: [], votes: [], watchlist: [], scouts: [] };
-const FILE = join(process.cwd(), '.data', 'local-store.json');
+/**
+ * Storage location: LOCAL_DATA_DIR env override → serverless /tmp (Vercel's
+ * only writable path; ephemeral — set DATABASE_URL there for real
+ * persistence, see README) → ./.data next to the project.
+ */
+const DATA_DIR =
+  process.env.LOCAL_DATA_DIR ?? (process.env.VERCEL ? '/tmp/.data' : join(process.cwd(), '.data'));
+const FILE = join(DATA_DIR, 'local-store.json');
 
 export const isLocalMode = () => !isDbConfigured();
 
